@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>schillman.se : Diablo IV farming tools</title>
+<meta name="description" content="Hand-built, offline-friendly farming tools for Diablo IV. Home of the Season 14 Farming Ledger, a 48 item checklist covering Aspects, Mythic Uniques, Lair Keys, gems, gold, Obols, Souls, Dust, Runes and Pandemonium Fragments.">
+<link rel="canonical" href="https://schillman.se/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23100d0f'/%3E%3Cpath d='M32 10c-9 14-13 21-8 30 -3-7 4-10 8-6 4-4 11-1 8 6 5-9 1-16-8-30Z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Same token set as the ledger. One accent (ember), gold for framing only. */
+:root{
+  --bg:#110d0f;
+  --surface:#1c161a;
+  --surface-hi:#241c21;
+  --border:#332830;
+  --border-soft:#241b20;
+  --ink:#eee6e1;
+  --ink-dim:#a89892;
+  --accent:#ff5a36;
+  --accent-hi:#ff7a52;
+  --accent-ink:#1c0d07;
+  --gold:#c9a15a;
+  --gold-dim:#8a7040;
+  --radius-lg:14px;
+  --radius-md:8px;
+  --font-display:"Cinzel",serif;
+  --font-ui:"Barlow",system-ui,-apple-system,sans-serif;
+  --font-cond:"Barlow Condensed",system-ui,-apple-system,sans-serif;
+  --shadow-panel:0 1px 0 rgba(255,255,255,.03) inset, 0 10px 30px rgba(0,0,0,.35);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(255,90,54,.10), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(201,161,90,.06), transparent 55%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--font-ui);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+h1,h2,h3{margin:0;font-weight:600;}
+p{margin:0;}
+ul{margin:0;padding:0;}
+a{color:var(--accent-hi);}
+:focus-visible{outline:2px solid var(--accent-hi);outline-offset:2px;border-radius:4px;}
+
+.app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 64px;}
+
+.topbar{
+  padding:40px 0 28px;
+  border-bottom:1px solid var(--border-soft);
+}
+.topbar__mark{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--gold);
+}
+.topbar__title{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4.4vw,40px);
+  letter-spacing:.01em;
+  line-height:1.1;
+  margin-top:8px;
+}
+.topbar__title em{font-style:normal;color:var(--accent-hi);}
+.topbar__sub{
+  margin-top:14px;
+  color:var(--ink-dim);
+  max-width:64ch;
+}
+
+section{margin-top:44px;}
+.section-label{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--gold);
+}
+h2{
+  font-family:var(--font-cond);
+  font-size:26px;
+  letter-spacing:.01em;
+  margin-top:6px;
+}
+.prose{max-width:70ch;margin-top:14px;}
+.prose p + p{margin-top:14px;}
+
+/* project card */
+.card{
+  display:block;
+  margin-top:20px;
+  padding:24px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-panel);
+  text-decoration:none;
+  color:inherit;
+  transition:border-color .18s, transform .18s;
+}
+.card:hover,.card:focus-visible{border-color:var(--gold-dim);transform:translateY(-2px);}
+.card__head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between;}
+.card__title{
+  font-family:var(--font-display);
+  font-size:22px;
+  color:var(--accent-hi);
+}
+.card__host{
+  font-family:var(--font-cond);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--ink-dim);
+}
+.card__body{margin-top:12px;color:var(--ink);max-width:70ch;}
+.card__stats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:18px;
+}
+.chip{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-size:11.5px;
+  padding:5px 12px;
+  border-radius:99px;
+  border:1px solid var(--border);
+  background:var(--surface-hi);
+  color:var(--ink-dim);
+}
+.card__cta{
+  display:inline-block;
+  margin-top:20px;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-size:13px;
+  padding:9px 18px;
+  border-radius:var(--radius-md);
+  background:var(--accent);
+  color:var(--accent-ink);
+}
+
+/* covered list */
+.cover-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:10px 20px;
+  margin-top:18px;
+  list-style:none;
+}
+.cover-list li{
+  padding-left:16px;
+  position:relative;
+  color:var(--ink-dim);
+  font-size:15px;
+}
+.cover-list li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.62em;
+  width:6px;
+  height:6px;
+  border-radius:2px;
+  background:var(--gold-dim);
+}
+
+/* how it works */
+.facts{margin-top:18px;list-style:none;max-width:70ch;}
+.facts li{
+  padding:16px 0;
+  border-top:1px solid var(--border-soft);
+}
+.facts li:last-child{border-bottom:1px solid var(--border-soft);}
+.facts b{
+  display:block;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-size:13px;
+  color:var(--ink);
+  margin-bottom:4px;
+}
+.facts span{color:var(--ink-dim);font-size:15px;}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;color:var(--ink);}
+
+.site-footer{
+  margin-top:56px;
+  padding-top:24px;
+  border-top:1px solid var(--border-soft);
+  color:var(--ink-dim);
+  font-size:12.5px;
+  line-height:1.8;
+  max-width:70ch;
+}
+.site-footer p + p{margin-top:8px;}
+.site-footer nav a{margin-right:18px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <p class="topbar__mark">schillman.se</p>
+    <h1 class="topbar__title">Farming tools for <em>Diablo IV</em></h1>
+    <p class="topbar__sub">Small, hand-built, offline-friendly tools for players who would rather spend their session farming than tabbing out to a spreadsheet. Everything here is a single static page: no account, no sign in, no server holding your progress.</p>
+  </header>
+
+  <section>
+    <p class="section-label">Current project</p>
+    <h2>Season 14 Farming Ledger</h2>
+    <div class="prose">
+      <p>Season guides tell you what is good. They rarely tell you what you have already done. The Ledger is the second half of that: a checklist of the 48 farming decisions that actually matter in Season 14, Season of Death Awakening, grouped into 13 categories and tickable as you go.</p>
+      <p>Each entry is one concrete action with a short note on why it is worth your time, when in the season to do it, and what it competes with. Items are tagged early game, late game, high priority, new this season or nerfed, so you can filter the list down to just the part of the season you are in right now.</p>
+    </div>
+
+    <a class="card" href="https://d4.schillman.se">
+      <div class="card__head">
+        <p class="card__title">Season 14 Farming Ledger</p>
+        <p class="card__host">d4.schillman.se</p>
+      </div>
+      <p class="card__body">A checklist for farming everything in Season of Death Awakening. Filter by tag, search across every note, tick items off as you clear them, and export your progress as a text blob when you switch device.</p>
+      <div class="card__stats">
+        <span class="chip">48 items</span>
+        <span class="chip">13 categories</span>
+        <span class="chip">Works offline</span>
+        <span class="chip">No account</span>
+      </div>
+      <span class="card__cta">Open the ledger</span>
+    </a>
+  </section>
+
+  <section>
+    <p class="section-label">Scope</p>
+    <h2>What the Ledger covers</h2>
+    <ul class="cover-list">
+      <li>Nightmare Dungeon Escalations</li>
+      <li>Legendary Aspects</li>
+      <li>Lair Bosses and Lair Keys</li>
+      <li>Mythic Uniques</li>
+      <li>Charms, Seals and Resin</li>
+      <li>Gems and Horadric Crafting</li>
+      <li>Gold</li>
+      <li>Obols</li>
+      <li>Forgotten Souls</li>
+      <li>Tuning Prisms</li>
+      <li>Primordial Dust</li>
+      <li>Runes</li>
+      <li>Pandemonium Fragments</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="section-label">Design</p>
+    <h2>How it works, and why it is built this way</h2>
+    <ul class="facts">
+      <li>
+        <b>Progress lives in your browser, not on a server</b>
+        <span>Ticked items are written to <code>localStorage</code> the moment you click. There is no account and nothing is uploaded, which also means progress is per browser and per device. Clearing site data wipes it.</span>
+      </li>
+      <li>
+        <b>Export and Import instead of sync</b>
+        <span>One button copies your progress to the clipboard as a small text blob, another pastes it back in somewhere else. That is the whole sync story, and it needs no infrastructure to keep running years from now.</span>
+      </li>
+      <li>
+        <b>One file, no build step</b>
+        <span>The entire ledger is a single HTML file with its data, styles and logic inline. You can save it to disk and it keeps working with the network off, which is the point when you are alt-tabbing out of a game.</span>
+      </li>
+      <li>
+        <b>Unverified details are labelled as unverified</b>
+        <span>Season content gets patched and terminology drifts. Where a detail could not be confirmed against current patch notes or War Plans data, the item says so rather than guessing, so you can check your own board.</span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="section-label">About</p>
+    <h2>Who makes this</h2>
+    <div class="prose">
+      <p>I am Sebastian Schillman, a platform engineer in Sweden. These are side projects, built for my own seasonal grind and then cleaned up enough to share. Nothing here is affiliated with or endorsed by Blizzard Entertainment; Diablo IV and its content are their trademarks.</p>
+      <p>Corrections are welcome, especially on season mechanics that have shifted since a page was written. The source for every tool is public on <a href="https://github.com/Schillman">GitHub</a>, and issues on the relevant repository are the fastest way to reach me.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="https://d4.schillman.se">Season 14 Ledger</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="https://github.com/Schillman">GitHub</a>
+    </nav>
+    <p>schillman.se is an independent fan site. Diablo IV is a trademark of Blizzard Entertainment, Inc. This site is not affiliated with, sponsored by or endorsed by Blizzard Entertainment.</p>
+  </footer>
+
+</div>
+</body>
+</html>
