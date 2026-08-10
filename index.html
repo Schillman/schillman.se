@@ -4,226 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>schillman.se : Diablo IV farming tools</title>
-<meta name="description" content="Hand-built, offline-friendly farming tools for Diablo IV. Home of the Season 14 Farming Ledger, a 48 item checklist covering Aspects, Mythic Uniques, Lair Keys, gems, gold, Obols, Souls, Dust, Runes and Pandemonium Fragments.">
+<meta name="description" content="Hand-built, offline-friendly farming tools and guides for Diablo IV. Home of the Season 14 Farming Ledger, plus written guides to Pandemonium Ruptures, War Plans and the Horadric Reserve affixes.">
 <link rel="canonical" href="https://schillman.se/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23100d0f'/%3E%3Cpath d='M32 10c-9 14-13 21-8 30 -3-7 4-10 8-6 4-4 11-1 8 6 5-9 1-16-8-30Z' fill='%23ff5a36'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-/* Same token set as the ledger. One accent (ember), gold for framing only. */
-:root{
-  --bg:#110d0f;
-  --surface:#1c161a;
-  --surface-hi:#241c21;
-  --border:#332830;
-  --border-soft:#241b20;
-  --ink:#eee6e1;
-  --ink-dim:#a89892;
-  --accent:#ff5a36;
-  --accent-hi:#ff7a52;
-  --accent-ink:#1c0d07;
-  --gold:#c9a15a;
-  --gold-dim:#8a7040;
-  --radius-lg:14px;
-  --radius-md:8px;
-  --font-display:"Cinzel",serif;
-  --font-ui:"Barlow",system-ui,-apple-system,sans-serif;
-  --font-cond:"Barlow Condensed",system-ui,-apple-system,sans-serif;
-  --shadow-panel:0 1px 0 rgba(255,255,255,.03) inset, 0 10px 30px rgba(0,0,0,.35);
-}
-*,*::before,*::after{box-sizing:border-box;}
-html{-webkit-text-size-adjust:100%;}
-body{
-  margin:0;
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(255,90,54,.10), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(201,161,90,.06), transparent 55%),
-    var(--bg);
-  color:var(--ink);
-  font-family:var(--font-ui);
-  font-size:16px;
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
-}
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-  opacity:.035;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-h1,h2,h3{margin:0;font-weight:600;}
-p{margin:0;}
-ul{margin:0;padding:0;}
-a{color:var(--accent-hi);}
-:focus-visible{outline:2px solid var(--accent-hi);outline-offset:2px;border-radius:4px;}
-
-.app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 64px;}
-
-.topbar{
-  padding:40px 0 28px;
-  border-bottom:1px solid var(--border-soft);
-}
-.topbar__mark{
-  font-family:var(--font-cond);
-  font-weight:600;
-  letter-spacing:.24em;
-  text-transform:uppercase;
-  font-size:12px;
-  color:var(--gold);
-}
-.topbar__title{
-  font-family:var(--font-display);
-  font-size:clamp(28px,4.4vw,40px);
-  letter-spacing:.01em;
-  line-height:1.1;
-  margin-top:8px;
-}
-.topbar__title em{font-style:normal;color:var(--accent-hi);}
-.topbar__sub{
-  margin-top:14px;
-  color:var(--ink-dim);
-  max-width:64ch;
-}
-
-section{margin-top:44px;}
-.section-label{
-  font-family:var(--font-cond);
-  font-weight:600;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  font-size:12px;
-  color:var(--gold);
-}
-h2{
-  font-family:var(--font-cond);
-  font-size:26px;
-  letter-spacing:.01em;
-  margin-top:6px;
-}
-.prose{max-width:70ch;margin-top:14px;}
-.prose p + p{margin-top:14px;}
-
-/* project card */
-.card{
-  display:block;
-  margin-top:20px;
-  padding:24px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-panel);
-  text-decoration:none;
-  color:inherit;
-  transition:border-color .18s, transform .18s;
-}
-.card:hover,.card:focus-visible{border-color:var(--gold-dim);transform:translateY(-2px);}
-.card__head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between;}
-.card__title{
-  font-family:var(--font-display);
-  font-size:22px;
-  color:var(--accent-hi);
-}
-.card__host{
-  font-family:var(--font-cond);
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  font-size:12px;
-  color:var(--ink-dim);
-}
-.card__body{margin-top:12px;color:var(--ink);max-width:70ch;}
-.card__stats{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:18px;
-}
-.chip{
-  font-family:var(--font-cond);
-  font-weight:600;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  font-size:11.5px;
-  padding:5px 12px;
-  border-radius:99px;
-  border:1px solid var(--border);
-  background:var(--surface-hi);
-  color:var(--ink-dim);
-}
-.card__cta{
-  display:inline-block;
-  margin-top:20px;
-  font-family:var(--font-cond);
-  font-weight:600;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  font-size:13px;
-  padding:9px 18px;
-  border-radius:var(--radius-md);
-  background:var(--accent);
-  color:var(--accent-ink);
-}
-
-/* covered list */
-.cover-list{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:10px 20px;
-  margin-top:18px;
-  list-style:none;
-}
-.cover-list li{
-  padding-left:16px;
-  position:relative;
-  color:var(--ink-dim);
-  font-size:15px;
-}
-.cover-list li::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:.62em;
-  width:6px;
-  height:6px;
-  border-radius:2px;
-  background:var(--gold-dim);
-}
-
-/* how it works */
-.facts{margin-top:18px;list-style:none;max-width:70ch;}
-.facts li{
-  padding:16px 0;
-  border-top:1px solid var(--border-soft);
-}
-.facts li:last-child{border-bottom:1px solid var(--border-soft);}
-.facts b{
-  display:block;
-  font-family:var(--font-cond);
-  font-weight:600;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  font-size:13px;
-  color:var(--ink);
-  margin-bottom:4px;
-}
-.facts span{color:var(--ink-dim);font-size:15px;}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;color:var(--ink);}
-
-.site-footer{
-  margin-top:56px;
-  padding-top:24px;
-  border-top:1px solid var(--border-soft);
-  color:var(--ink-dim);
-  font-size:12.5px;
-  line-height:1.8;
-  max-width:70ch;
-}
-.site-footer p + p{margin-top:8px;}
-.site-footer nav a{margin-right:18px;}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
 </head>
 <body>
 <div class="app">
@@ -231,7 +18,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;col
   <header class="topbar">
     <p class="topbar__mark">schillman.se</p>
     <h1 class="topbar__title">Farming tools for <em>Diablo IV</em></h1>
-    <p class="topbar__sub">Small, hand-built, offline-friendly tools for players who would rather spend their session farming than tabbing out to a spreadsheet. Everything here is a single static page: no account, no sign in, no server holding your progress.</p>
+    <p class="topbar__sub">Small, hand-built, offline-friendly tools for players who would rather spend their session farming than tabbing out to a spreadsheet, plus written guides to the mechanics those tools assume you already know. Everything here is a static page: no account, no sign in, no server holding your progress.</p>
+    <nav class="sitenav">
+      <a href="/" aria-current="page">Home</a>
+      <a href="/season-14-death-awakening.html">Season 14</a>
+      <a href="/war-plans.html">War Plans</a>
+      <a href="/escalations.html">Escalations</a>
+      <a href="https://d4.schillman.se">The Ledger</a>
+    </nav>
   </header>
 
   <section>
@@ -275,6 +69,34 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;col
       <li>Primordial Dust</li>
       <li>Runes</li>
       <li>Pandemonium Fragments</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="section-label">Guides</p>
+    <h2>The mechanics behind the checklist</h2>
+    <div class="prose">
+      <p>The Ledger is deliberately terse: one line per decision. These are the longer explanations behind it, for the parts of Season 14 where knowing the mechanic changes what you do rather than just how fast you do it. Each one lists the sources it was checked against, and says plainly where a detail could not be confirmed.</p>
+    </div>
+    <ul class="guide-list">
+      <li>
+        <a href="/season-14-death-awakening.html">
+          <b>Season of Death Awakening, explained</b>
+          <span>Pandemonium Ruptures and their three sizes, Tears, Realmwalkers, Deathtoll Chambers, Superior Lair Keys, the Corrupted Reaper, and how Glints of Hope and Pandemonium Fragments turn into Mythic Uniques.</span>
+        </a>
+      </li>
+      <li>
+        <a href="/war-plans.html">
+          <b>War Plans: the board, the trees, and what to rush</b>
+          <span>Where the board is, the seven activity trees, how Activity Experience and skill points work, rerolling with New Plans, party sync, and the seven nodes worth taking first.</span>
+        </a>
+      </li>
+      <li>
+        <a href="/escalations.html">
+          <b>Escalations and the Horadric Reserve affixes</b>
+          <span>The three dungeon chain into Astaroth, how positive and negative affixes stack as you go, and a full table of every Reserve affix with what its 8 chests actually contain.</span>
+        </a>
+      </li>
     </ul>
   </section>
 
