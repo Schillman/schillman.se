@@ -1,0 +1,11 @@
+# Netlify's Pretty URLs post-processing was rewriting every internal link from
+# /about.html to /about in the served HTML, while the canonical tags and the
+# sitemap both point at the .html form. That left every page reachable at two
+# live URLs with the site's own links disagreeing with its own canonical, which
+# is not something to leave in place while the domain is under manual review.
+#
+# Turning it off keeps the served HTML exactly as authored, so links, canonicals
+# and sitemap all agree on one URL per page.
+
+[build.processing.html]
+  pretty_urls = false
