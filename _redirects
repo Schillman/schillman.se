@@ -15,8 +15,11 @@
 /helltides.html                   /d4/helltides.html                    301!
 
 # Convenience only, never linked or canonical: /d4 without the trailing slash,
+# NOT forced. Netlify normalises /d4 and /d4/ to the same match key, so a forced
+# rule here preempts the real d4/index.html and redirects /d4/ to itself forever.
+# Unforced, it only fires when no file matches, which is the /d4 case alone.
 # and the extensionless forms a reader may type or another site may have linked.
-/d4                               /d4/                                  301!
+/d4                               /d4/                                  301
 /d4/guides                        /d4/guides.html                       301!
 /d4/season-14-death-awakening     /d4/season-14-death-awakening.html    301!
 /d4/war-plans                     /d4/war-plans.html                    301!
