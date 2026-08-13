@@ -60,7 +60,7 @@ page offers "Send my progress again".
 | File | What it is |
 |---|---|
 | `index.html` | The hub. The site's thesis, the Diablo IV monument, the register of what has a section and what earns one, and the editorial rules. |
-| `d4/index.html` | Diablo IV section overview. The season in short, the three guides, the ledger, and how the ledger is built. |
+| `d4/index.html` | Diablo IV section overview. The season in short, the guide list, the ledger, and how the ledger is built. |
 | `d4/guides.html` | The guide index for Diablo IV. A new guide gets added here and on `d4/index.html`. |
 | `d4/ledger.html` | The Season 14 Farming Ledger. The one page with its own inline styles and scripts, because it has to work as a single file saved to disk. See below before editing it. |
 | `site.css` | Shared stylesheet, the single source of truth for the design tokens, and the whole motion system. The ledger keeps its own inline copy on purpose, because it has to work as one file saved to disk. |
@@ -69,6 +69,7 @@ page offers "Send my progress again".
 | `d4/helltides.html` | Guide: Aberrant Cinders and their expiry, Tortured Gift prices, the Threat meter, and the Helltide War Plan nodes. |
 | `d4/war-plans.html` | Guide: the War Plans board, the seven activity trees, and which nodes to take first. |
 | `d4/escalations.html` | Guide: the Escalation chain and a full table of the Horadric Reserve affixes. |
+| `d4/mythic-uniques.html` | Guide: Mythic Uniques 3.0, the four acquisition routes and their costs, the Crafted tag, Pandemonium Fragment sources. |
 | `about.html` | Who writes the site, why, and the editorial rules every page is held to. Carries the sourcing policy in public. |
 | `contact.html` | How to reach me, what makes a correction actionable, and rights holder contact. |
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
