@@ -244,8 +244,10 @@ Four layers, all in `site.css`, all switched off wholesale under
 3. **Scroll reveals.** `.reveal` sections fade and rise in as they enter the
    viewport, staggered by `--i`. One IntersectionObserver in `site.js`, with two
    guards so a hidden start state can never cost a reader content: `onerror` on
-   the script tag drops the `.js` class if the file fails, and `@media print`
-   pins every reveal visible.
+   the script tag drops the `.js` class if the file fails to load, `check.py`
+   runs `node --check` on it so a file that loads but does not parse fails the
+   build instead of the page, and `@media print` pins every reveal visible with
+   its transition off.
 4. **Choreography.** Hover and focus share every gesture: the nav wash, the card
    hairline, the guide bar, the CTA ring, the prose underline growing from the
    leading edge. All left to right, quiet to lit, one grammar.

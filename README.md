@@ -50,7 +50,6 @@ disabled placeholder, so it is never a dead end for a real visitor.
 | `netlify.toml` | Turns Netlify's Pretty URLs post processing off, so there is one URL form per page. Leave it off. |
 | `ads.txt` | AdSense authorized seller record. Lives on the root domain and covers the subdomains too. |
 | `robots.txt`, `sitemap.xml` | Crawl hints. Add every new page to the sitemap and bump its `lastmod`. |
-| `PRODUCT.md` | Durable product truth. Written by the redesign pass without an interview, so every fact in it is marked as inferred rather than confirmed. |
 | `DESIGN.md` | The design system as built: tokens, components, motion, and the rules a new page has to keep. |
 | `.github/workflows/publish-queue.yml` | Releases one queued page every `INTERVAL_DAYS` (currently 2). See below. |
 
@@ -70,14 +69,23 @@ load sequence per page, scroll reveals, and hover and focus choreography. Cross
 document transitions are the two line `@view-transition` declaration, no
 JavaScript.
 
-`.reveal` starts hidden and only `site.js` unhides it, so two guards keep that
-from ever costing a reader content. `onerror` on each `<script src="/site.js">`
-strips the `.js` class if the file fails to load, and an `@media print` block
-pins every reveal visible, because print has no scrolling and no observer.
-Both were mutation tested: without the `onerror` guard a missing `site.js`
-leaves every section permanently invisible, and without the print block a
-printed guide loses 89 percent of its text (5602 text drawing operators in the
-PDF with it, 618 without).
+`.reveal` starts hidden and only `site.js` unhides it, so three guards keep that
+from ever costing a reader content, one per way it can go wrong.
+
+- **The file 404s.** `onerror` on each `<script src="/site.js">` strips the
+  `.js` class, and the hidden start state goes with it.
+- **The file serves 200 and does not parse.** `onerror` never fires for that,
+  so `check.py` runs `node --check site.js` instead. This is the door the other
+  two guards leave open.
+- **Print, and PDF snapshots.** There is no scrolling and no observer, so an
+  `@media print` block pins every reveal visible and kills the transition so a
+  page cannot be captured mid fade.
+
+All three are mutation tested. Without `onerror` a missing `site.js` leaves
+every section permanently invisible; with a deliberate syntax error `check.py`
+exits 1 on `SyntaxError`; without the print block a printed guide loses about 89
+percent of its text (5602 text drawing operators in the PDF with it, 618
+without).
 
 `prefers-reduced-motion: reduce` switches all of it off wholesale, at the bottom
 of `site.css`. That is a floor, not a dial: the ember field is removed from the
@@ -123,7 +131,7 @@ extension of `main` holding one commit per unpublished page.
 
 ## Checking a change
 
-There is no build step and no test framework. Run `python3 check.py .` before pushing. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css`, every internal link resolves to a file that exists whether it is written absolute or relative, there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), and no custom property is declared without being referenced. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
+There is no build step and no test framework. Run `python3 check.py .` before pushing. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css`, every internal link resolves to a file that exists whether it is written absolute or relative, there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), `site.js` parses under `node --check`, and no custom property is declared without being referenced. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
 
 It was validated by mutation: each check was confirmed to fail on a deliberately broken copy of the site, not just to pass on the current one. The subdirectory walk and the relative link resolution were validated the same way, by confirming the previous version of `check.py` stays green on a mutation the current one catches. If you add a check, do the same, otherwise you cannot tell it from a check that never fires.
 

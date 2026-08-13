@@ -713,7 +713,7 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:none;}
    scrolling and no observer, so without this a printed guide is blank pages.
    The other half of that guard is onerror on the script tag in each head. */
 @media print{
-  .js .reveal{opacity:1!important;transform:none!important;}
+  .js .reveal{opacity:1!important;transform:none!important;transition:none!important;}
   .embers{display:none!important;}
 }
 

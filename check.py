@@ -8,7 +8,8 @@ Checks:
   4. no unescaped & (must be part of an entity)
   5. HTML parses and tags are balanced
   6. WCAG contrast for the declared foreground/background pairs
-  7. no custom property declared without being referenced
+  7. site.js parses (node --check)
+  8. no custom property declared without being referenced
 
 The site is no longer flat: everything Diablo IV lives under /d4/ and a second
 game gets its own directory beside it. So the walk is recursive, and pages are
@@ -17,6 +18,8 @@ d4/guides.html and a future d4x/guides.html are different files.
 """
 import os
 import re
+import shutil
+import subprocess
 import sys
 from html.parser import HTMLParser
 
@@ -212,7 +215,27 @@ for fg, bg, minimum, what in PAIRS:
     if not ok:
         fail(f"contrast {r:.2f}:1 below {minimum}:1 for --{fg} on --{bg} ({what})")
 
-# ---------- 7. unused tokens ----------
+# ---------- 7. site.js parses ----------
+# The onerror attribute on each <script src="/site.js"> only fires when the file
+# fails to LOAD. A file that serves 200 and then fails to PARSE never runs, the
+# inline setter has already put .js on the root element, and every .reveal
+# section is permanently invisible with nothing left to catch it. Same outcome,
+# different door. So the syntax gets checked here, the way the ledger repo runs
+# node --check on its inline blocks.
+sitejs = os.path.join(ROOT, "site.js")
+if os.path.isfile(sitejs):
+    if shutil.which("node") is None:
+        fail("site.js: node not found, cannot syntax check it. Install node, or "
+             "check it by hand before pushing.")
+    else:
+        proc = subprocess.run(["node", "--check", sitejs],
+                              capture_output=True, text=True)
+        if proc.returncode != 0:
+            lines = proc.stderr.strip().splitlines() or ["unknown error"]
+            detail = next((ln for ln in lines if "Error" in ln), lines[0])
+            fail(f"site.js: does not parse -> {detail.strip()}")
+
+# ---------- 8. unused tokens ----------
 all_src = css + "".join(open(f, encoding="utf-8").read() for f in html_files)
 for tok in re.findall(r"--([\w-]+):", css):
     if all_src.count(f"var(--{tok})") == 0:
