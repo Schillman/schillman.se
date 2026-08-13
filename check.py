@@ -3,13 +3,18 @@
 
 Checks:
   1. every class= token used in HTML has a matching selector in site.css
-  2. every internal href resolves to a file that exists
+  2. every internal href or src, absolute or relative, resolves to a real file
   3. no em dash, no curly quotes
   4. no unescaped & (must be part of an entity)
   5. HTML parses and tags are balanced
   6. WCAG contrast for the declared foreground/background pairs
+  7. no custom property declared without being referenced
+
+The site is no longer flat: everything Diablo IV lives under /d4/ and a second
+game gets its own directory beside it. So the walk is recursive, and pages are
+reported by their path relative to the root rather than by basename, because
+d4/guides.html and a future d4x/guides.html are different files.
 """
-import glob
 import os
 import re
 import sys
@@ -23,11 +28,23 @@ def fail(msg):
     FAILURES.append(msg)
 
 
+def rel(path):
+    """Path as written in the tree, so d4/guides.html is not just guides.html."""
+    return os.path.relpath(path, ROOT).replace(os.sep, "/")
+
+
 # ---------- 1. class coverage ----------
 css = open(os.path.join(ROOT, "site.css"), encoding="utf-8").read()
 css_classes = set(re.findall(r"\.([A-Za-z][\w-]*)", css))
 
-html_files = sorted(glob.glob(os.path.join(ROOT, "*.html")))
+html_files = []
+for dirpath, dirnames, filenames in os.walk(ROOT):
+    dirnames[:] = sorted(d for d in dirnames
+                         if not d.startswith(".") and d != "node_modules")
+    for name in sorted(filenames):
+        if name.endswith(".html"):
+            html_files.append(os.path.join(dirpath, name))
+html_files.sort()
 if not html_files:
     fail("no html files found")
 
@@ -36,28 +53,59 @@ for f in html_files:
     for attr in re.findall(r'class="([^"]*)"', src):
         for tok in attr.split():
             if tok not in css_classes:
-                fail(f"{os.path.basename(f)}: class '{tok}' has no selector in site.css")
+                fail(f"{rel(f)}: class '{tok}' has no selector in site.css")
 
 # ---------- 2. internal links ----------
+# Both forms have to resolve. An absolute href is rooted at the publish
+# directory; a relative one is rooted at the directory of the page it sits in,
+# and that is the form that silently breaks when a page moves into /d4/. A href
+# ending in "/" is a directory, and Netlify serves its index.html.
+EXTERNAL = re.compile(r"^(?:[A-Za-z][\w+.-]*:|//)")
+
+
+def resolve(page, href):
+    """Filesystem path an internal reference points at, or None if external."""
+    href = href.split("#", 1)[0].split("?", 1)[0]
+    if not href or EXTERNAL.match(href):
+        return None
+    if href.startswith("/"):
+        target = os.path.join(ROOT, href.lstrip("/"))
+    else:
+        target = os.path.join(os.path.dirname(page), href)
+    if href.endswith("/") or os.path.isdir(target):
+        target = os.path.join(target, "index.html")
+    return os.path.normpath(target)
+
+
 for f in html_files:
     src = open(f, encoding="utf-8").read()
-    for href in re.findall(r'href="(/[^"]*)"', src):
-        target = href.lstrip("/") or "index.html"
-        if not os.path.exists(os.path.join(ROOT, target)):
-            fail(f"{os.path.basename(f)}: internal link '{href}' -> missing {target}")
+    for attr in re.findall(r'(?:href|src)="([^"]*)"', src):
+        target = resolve(f, attr)
+        if target is None:
+            continue
+        if not os.path.isfile(target):
+            fail(f"{rel(f)}: internal link '{attr}' -> missing {rel(target)}")
 
 # ---------- 3 & 4. copy hygiene ----------
 BAD_CHARS = {"—": "em dash", "‘": "curly quote", "’": "curly quote",
              "“": "curly quote", "”": "curly quote"}
 ENTITY = re.compile(r"&(?:[A-Za-z][A-Za-z0-9]*|#\d+|#x[0-9A-Fa-f]+);")
 
-for f in html_files + [os.path.join(ROOT, "site.css")]:
+# site.js is scanned for typographic junk in its comments but not for bare "&",
+# because JavaScript writes "&&" legitimately and HTML entities mean nothing in
+# it. Everything else is scanned for both.
+ENTITY_EXEMPT = {os.path.normpath(os.path.join(ROOT, "site.js"))}
+
+for f in html_files + [os.path.join(ROOT, "site.css"),
+                       os.path.join(ROOT, "site.js")]:
     src = open(f, encoding="utf-8").read()
-    name = os.path.basename(f)
+    name = rel(f)
     for ch, label in BAD_CHARS.items():
         if ch in src:
             line = src[: src.index(ch)].count("\n") + 1
             fail(f"{name}:{line}: {label} found")
+    if os.path.normpath(f) in ENTITY_EXEMPT:
+        continue
     spans = {m.start() for m in ENTITY.finditer(src)}
     for m in re.finditer(r"&", src):
         if m.start() not in spans:
@@ -94,11 +142,11 @@ class Balance(HTMLParser):
 
 
 for f in html_files:
-    p = Balance(os.path.basename(f))
+    p = Balance(rel(f))
     p.feed(open(f, encoding="utf-8").read())
     p.close()
     for tag, line in p.stack:
-        fail(f"{os.path.basename(f)}: <{tag}> opened at line {line} never closed")
+        fail(f"{rel(f)}: <{tag}> opened at line {line} never closed")
 
 # ---------- 6. WCAG contrast ----------
 TOKENS = dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6});", css))
@@ -135,6 +183,20 @@ PAIRS = [
     ("accent", "surface-hi", 3.0, "current-page nav outline"),
     ("accent-hi", "bg", 3.0, "focus ring on page"),
     ("accent-hi", "surface", 3.0, "focus ring on panel"),
+    # Added with the hub redesign.
+    # --bloom is the ember wash: --bg with --accent over it at 16%. It is a real
+    # declared token precisely so that the text sitting on top of the hero glow
+    # and the monument panel gets computed rather than assumed.
+    ("ink", "bloom", 4.5, "monument body text over the ember bloom"),
+    ("ink-dim", "bloom", 4.5, "hero lede over the ember bloom"),
+    ("gold", "bloom", 4.5, "monument eyebrow over the ember bloom"),
+    ("accent-hi", "bloom", 4.5, "season line and links over the ember bloom"),
+    ("gold-dim", "bloom", 3.0, "hairline rule over the ember bloom"),
+    ("gold", "surface-hi", 4.5, "label on raised panel"),
+    ("accent-hi", "surface-hi", 4.5, "title or link on raised panel"),
+    ("gold-dim", "surface-hi", 3.0, "crumb divider vs raised panel"),
+    ("accent", "surface", 3.0, "ember hairline tracing a hovered card edge"),
+    ("accent", "bg", 3.0, "hero rule and ember sparks vs page"),
 ]
 # --border is deliberately absent: it draws decorative panel outlines on cards,
 # chips and tables that are already identified by their fill and their text, so

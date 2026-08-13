@@ -5,33 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>War Plans: the board, the trees, and what to rush : schillman.se</title>
 <meta name="description" content="How Diablo IV War Plans work: where the board is, the seven activity skill trees, how Activity Experience and skill points are earned, resetting with New Plans, party sync, and which nodes are worth the first points.">
-<link rel="canonical" href="https://schillman.se/war-plans.html">
+<link rel="canonical" href="https://schillman.se/d4/war-plans.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23100d0f'/%3E%3Cpath d='M32 10c-9 14-13 21-8 30 -3-7 4-10 8-6 4-4 11-1 8 6 5-9 1-16-8-30Z' fill='%23ff5a36'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
+<script>document.documentElement.className="js";</script>
+<script src="/site.js" defer></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6075501159466539"
      crossorigin="anonymous"></script>
 </head>
 <body>
+
+<div class="embers" aria-hidden="true">
+  <span class="ember" style="--x:7%;--s:3px;--d:21s;--t:0s;--dx:20px"></span>
+  <span class="ember" style="--x:19%;--s:2px;--d:26s;--t:5s;--dx:-18px"></span>
+  <span class="ember" style="--x:33%;--s:3px;--d:18s;--t:9s;--dx:26px"></span>
+  <span class="ember" style="--x:47%;--s:2px;--d:24s;--t:3s;--dx:-22px"></span>
+  <span class="ember" style="--x:58%;--s:4px;--d:29s;--t:13s;--dx:16px"></span>
+  <span class="ember" style="--x:71%;--s:2px;--d:20s;--t:7s;--dx:-26px"></span>
+  <span class="ember" style="--x:83%;--s:3px;--d:23s;--t:16s;--dx:22px"></span>
+  <span class="ember" style="--x:94%;--s:2px;--d:27s;--t:11s;--dx:-14px"></span>
+</div>
 <div class="app app--narrow">
 
   <header class="topbar">
-    <a class="topbar__mark" href="/">schillman.se</a>
+    <div class="topbar__crumb">
+      <a class="topbar__mark" href="/">schillman.se</a>
+      <span class="topbar__game">Diablo IV</span>
+    </div>
     <h1 class="topbar__title">War Plans: the board, the trees, and what to <em>rush</em></h1>
     <p class="topbar__sub">War Plans is the system most likely to be sitting unused in your game. It is a playlist you build out of endgame activities, and it quietly doubles as seven permanent upgrade trees for the activities you were going to run anyway. Ignoring it costs you loot for no reason.</p>
     <p class="updated">Last checked against current sources on 10 August 2026.</p>
-    <nav class="sitenav">
-      <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">The Ledger</a>
+    <nav class="sitenav" aria-label="Diablo IV section">
+      <a href="/d4/">Overview</a>
+      <a href="/d4/guides.html">Guides</a>
+      <!-- Reserved slot. The Farming Ledger moves to /d4/ledger.html and this href
+           changes to it. Until that page exists it points at the live tool, so
+           the nav is never a dead link for a real visitor. -->
+      <a href="https://d4.schillman.se">Ledger</a>
       <a href="/about.html">About</a>
-      <a href="/contact.html">Contact</a>
     </nav>
   </header>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Getting to it</p>
     <h2>Where the board is</h2>
     <div class="prose longform">
@@ -40,7 +58,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">The trees</p>
     <h2>Seven activities, seven separate trees</h2>
     <div class="prose longform">
@@ -76,7 +94,7 @@
     </ul>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Groups</p>
     <h2>Syncing a board with your party</h2>
     <div class="prose longform">
@@ -85,7 +103,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Spending points</p>
     <h2>Nodes worth the first points</h2>
     <div class="prose longform">
@@ -153,12 +171,12 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Practical order</p>
     <h2>If you only do one thing</h2>
     <div class="prose longform">
-      <p>Take Hellmouth then Writhe and Rot on the Helltide tree first. It is the strongest single combination available, it feeds off Helltides which is where the <a href="/season-14-death-awakening.html">Season 14 Rupture loop</a> already puts you, and levelling faster makes every other tree cheaper to fill because Activity Experience scales with the difficulty you can hold.</p>
-      <p>After that, split by what you are short of: Nightmare Dungeon nodes if you need materials and gems through <a href="/escalations.html">Escalations</a>, Lair Boss nodes if you are sitting on Superior Lair Keys and want more out of each pair.</p>
+      <p>Take Hellmouth then Writhe and Rot on the Helltide tree first. It is the strongest single combination available, it feeds off Helltides which is where the <a href="/d4/season-14-death-awakening.html">Season 14 Rupture loop</a> already puts you, and levelling faster makes every other tree cheaper to fill because Activity Experience scales with the difficulty you can hold.</p>
+      <p>After that, split by what you are short of: Nightmare Dungeon nodes if you need materials and gems through <a href="/d4/escalations.html">Escalations</a>, Lair Boss nodes if you are sitting on Superior Lair Keys and want more out of each pair.</p>
     </div>
     <ul class="sources">
       <li><a href="https://maxroll.gg/d4/resources/war-plans" rel="noopener">War Plans, Maxroll</a>, for the unlock, board location, the seven trees, level and point structure, Activity Experience scaling and node names.</li>
@@ -169,10 +187,11 @@
   </section>
 
   <footer class="site-footer">
-    <nav>
+    <nav aria-label="Footer">
       <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">Season 14 Ledger</a>
+      <a href="/d4/">Diablo IV</a>
+      <a href="/d4/guides.html">Guides</a>
+      <a href="https://d4.schillman.se">Ledger</a>
       <a href="/about.html">About</a>
       <a href="/contact.html">Contact</a>
       <a href="/privacy.html">Privacy</a>

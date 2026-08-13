@@ -1,0 +1,24 @@
+# Netlify redirects. Everything Diablo IV moved under /d4/ when the site became
+# a multi game hub. These URLs are in a live sitemap that Google has already
+# crawled and the domain is under manual AdSense review, so every old path 301s
+# to its new home rather than 404ing. Do not delete these when the queue is
+# rebuilt.
+#
+# Netlify's own Pretty URLs post processing stays off (netlify.toml), so the
+# .html form is the one and only URL for every page and these rules do not fight
+# it. Rules are matched in file order and the first match wins.
+
+/guides.html                      /d4/guides.html                       301!
+/season-14-death-awakening.html   /d4/season-14-death-awakening.html    301!
+/war-plans.html                   /d4/war-plans.html                    301!
+/escalations.html                 /d4/escalations.html                  301!
+/helltides.html                   /d4/helltides.html                    301!
+
+# Convenience only, never linked or canonical: /d4 without the trailing slash,
+# and the extensionless forms a reader may type or another site may have linked.
+/d4                               /d4/                                  301!
+/d4/guides                        /d4/guides.html                       301!
+/d4/season-14-death-awakening     /d4/season-14-death-awakening.html    301!
+/d4/war-plans                     /d4/war-plans.html                    301!
+/d4/escalations                   /d4/escalations.html                  301!
+/d4/helltides                     /d4/helltides.html                    301!

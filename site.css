@@ -1,7 +1,13 @@
 /* schillman.se shared stylesheet.
-   Single source of truth for the design tokens. The ledger at d4.schillman.se
-   deliberately keeps its own inline copy, because that page has to keep working
-   as a single file saved to disk with the network off. */
+   Single source of truth for the design tokens. The ledger deliberately keeps
+   its own inline copy, because that page has to keep working as a single file
+   saved to disk with the network off.
+
+   Two levels of chrome live here. The hub at / is the game selector and owns
+   .hero, .monument and .roster. Everything under /d4/ is a game section and
+   reuses the shared page furniture with a .topbar__crumb identifying which
+   game you are inside. Adding a second game needs one more .monument on the
+   hub, one more .roster__row, and a directory. It needs nothing new here. */
 
 :root{
   --bg:#110d0f;
@@ -16,12 +22,19 @@
   --accent-ink:#1c0d07;
   --gold:#c9a15a;
   --gold-dim:#8a7040;
+  /* --bloom is --bg with --accent composited over it at 16%. It is declared as
+     a real token rather than written as an rgba() stop so that check.py can
+     compute contrast against it: it is the effective background under the hero
+     and the monument, and every text colour that sits over it is in PAIRS. */
+  --bloom:#371915;
   --radius-lg:14px;
   --radius-md:8px;
   --font-display:"Cinzel",serif;
   --font-ui:"Barlow",system-ui,-apple-system,sans-serif;
   --font-cond:"Barlow Condensed",system-ui,-apple-system,sans-serif;
   --shadow-panel:0 1px 0 rgba(255,255,255,.03) inset, 0 10px 30px rgba(0,0,0,.35);
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-soft:cubic-bezier(.65,0,.35,1);
 }
 
 *,*::before,*::after{box-sizing:border-box;}
@@ -29,7 +42,7 @@ html{-webkit-text-size-adjust:100%;}
 body{
   margin:0;
   background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(255,90,54,.10), transparent 60%),
+    radial-gradient(1200px 600px at 15% -10%, var(--bloom), transparent 60%),
     radial-gradient(900px 500px at 100% 0%, rgba(201,161,90,.06), transparent 55%),
     var(--bg);
   color:var(--ink);
@@ -57,6 +70,66 @@ strong{color:var(--ink);font-weight:600;}
 
 .app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 64px;}
 .app--narrow{max-width:760px;}
+.app--wide{max-width:1080px;}
+
+/* ============================================================
+   MOTION SYSTEM
+   Four layers, in the order a visitor meets them:
+     1. drifting embers, ambient and decorative
+     2. the load sequence, staged once per page
+     3. scroll reveals, one per section
+     4. hover and focus choreography on every control
+   Every one of them is switched off wholesale in the
+   prefers-reduced-motion block at the bottom of this file.
+   ============================================================ */
+
+/* Cross document transitions. Two declarations, no JavaScript, and browsers
+   that do not implement it simply navigate. .app carries the page name and the
+   wordmark is lifted out of it so it holds still while the page underneath
+   swaps, which is what makes /d4/ feel like a section rather than a new site. */
+@view-transition{navigation:auto;}
+.app{view-transition-name:page;}
+.topbar__mark,.hero__mark{view-transition-name:mark;}
+::view-transition-old(page){animation:vt-out .24s var(--ease-soft) both;}
+::view-transition-new(page){animation:vt-in .42s var(--ease) both;}
+@keyframes vt-out{to{opacity:0;transform:translateY(-10px);}}
+@keyframes vt-in{from{opacity:0;transform:translateY(16px);}}
+
+@keyframes rise-in{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+@keyframes draw-x{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes bloom-in{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:none;}}
+@keyframes sigil-breathe{0%,100%{opacity:.8;transform:scale(1);}50%{opacity:1;transform:scale(1.05);}}
+@keyframes ember-rise{
+  0%{transform:translate3d(0,0,0) scale(.5);opacity:0;}
+  10%{opacity:.6;}
+  75%{opacity:.3;}
+  100%{transform:translate3d(var(--dx,0px),-104vh,0) scale(1);opacity:0;}
+}
+
+/* Ambient embers. Fourteen 2 to 4px sparks, transform and opacity only, so the
+   whole field stays on the compositor. Purely decorative and aria-hidden. */
+.embers{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.ember{
+  position:absolute;
+  left:var(--x);
+  bottom:-10px;
+  width:var(--s);
+  height:var(--s);
+  border-radius:50%;
+  background:var(--accent);
+  opacity:0;
+  animation:ember-rise var(--d) linear var(--t) infinite;
+}
+
+/* Scroll reveals. Gated on .js so that with scripting off every section is
+   simply visible, which is also the state a reduced-motion visitor gets. */
+.js .reveal{
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);
+  transition-delay:calc(var(--i,0)*80ms);
+}
+.js .reveal.is-in{opacity:1;transform:none;}
 
 /* ---- header ---- */
 .topbar{padding:40px 0 28px;border-bottom:1px solid var(--border-soft);}
@@ -70,6 +143,27 @@ strong{color:var(--ink);font-weight:600;}
 }
 a.topbar__mark{text-decoration:none;display:inline-block;}
 a.topbar__mark:hover{color:var(--accent-hi);}
+/* Section breadcrumb: the site wordmark, a hairline, then the game you are in.
+   This is the only thing that identifies /d4/ as a section rather than a site. */
+.topbar__crumb{display:flex;align-items:center;flex-wrap:wrap;gap:10px;}
+.topbar__crumb::after{
+  content:"";
+  flex:1 1 40px;
+  height:1px;
+  background:linear-gradient(90deg,var(--gold-dim),transparent);
+  transform-origin:left;
+  animation:draw-x 1.1s var(--ease) .1s both;
+}
+.topbar__game{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--ink-dim);
+  padding-left:10px;
+  border-left:1px solid var(--gold-dim);
+}
 .topbar__title{
   font-family:var(--font-display);
   font-size:clamp(28px,4.4vw,40px);
@@ -81,6 +175,11 @@ a.topbar__mark:hover{color:var(--accent-hi);}
 .topbar__sub{margin-top:14px;color:var(--ink-dim);max-width:64ch;}
 .updated{margin-top:14px;color:var(--ink-dim);font-size:13px;}
 
+.js .topbar__title{animation:rise-in .8s var(--ease) .12s both;}
+.js .topbar__sub{animation:rise-in .8s var(--ease) .2s both;}
+.js .updated{animation:rise-in .8s var(--ease) .26s both;}
+.js .sitenav{animation:rise-in .8s var(--ease) .32s both;}
+
 .sitenav{
   display:flex;
   flex-wrap:wrap;
@@ -88,6 +187,9 @@ a.topbar__mark:hover{color:var(--accent-hi);}
   margin-top:24px;
 }
 .sitenav a{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
   font-family:var(--font-cond);
   font-weight:600;
   letter-spacing:.08em;
@@ -101,12 +203,227 @@ a.topbar__mark:hover{color:var(--accent-hi);}
   background:var(--surface);
   color:var(--ink-dim);
   text-decoration:none;
+  transition:border-color .2s var(--ease-soft),color .2s var(--ease-soft);
 }
-.sitenav a:hover{border-color:var(--gold);color:var(--ink);}
+/* The ember wash sweeps in from the leading edge on hover and on keyboard
+   focus, so the choreography is identical for both input methods. */
+.sitenav a::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(90deg,rgba(255,90,54,.28),rgba(255,90,54,.06));
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .32s var(--ease);
+}
+.sitenav a:hover::before,.sitenav a:focus-visible::before{transform:scaleX(1);}
+.sitenav a:hover,.sitenav a:focus-visible{border-color:var(--gold);color:var(--ink);}
 .sitenav a[aria-current="page"]{
   border-color:var(--accent);
   color:var(--ink);
   background:var(--surface-hi);
+}
+
+/* ============================================================
+   HUB: the game selector at /
+   One game is not a gap in a grid, it is a monument with a
+   register under it. The composition is built to read as
+   complete at one entry and to keep reading as complete at
+   four, which a card grid cannot do.
+   ============================================================ */
+.hero{padding:56px 0 8px;}
+.hero__head{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px 28px;
+  align-items:center;
+  justify-content:space-between;
+}
+/* The hub reads mark, nav, rule, title, lede, monument. The shared .sitenav
+   delay is tuned for the guide header, where the nav comes last, so the hub
+   pulls it forward to keep the load sequence in reading order. */
+.js .hero__head .sitenav{margin-top:0;animation-delay:.12s;}
+.hero__mark{
+  display:inline-block;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--gold);
+  text-decoration:none;
+}
+.hero__rule{
+  height:1px;
+  margin:18px 0 26px;
+  background:linear-gradient(90deg,var(--accent),var(--gold-dim) 38%,transparent);
+  transform-origin:left;
+}
+.hero__title{
+  font-family:var(--font-display);
+  font-size:clamp(38px,7.2vw,76px);
+  line-height:1.02;
+  letter-spacing:-.01em;
+  max-width:15ch;
+}
+.hero__title em{font-style:normal;color:var(--accent-hi);}
+.hero__lede{margin-top:22px;color:var(--ink-dim);max-width:58ch;font-size:17px;}
+
+.js .hero__mark{animation:rise-in .7s var(--ease) .05s both;}
+.js .hero__rule{animation:draw-x 1.2s var(--ease) .18s both;}
+.js .hero__title{animation:rise-in .9s var(--ease) .28s both;}
+.js .hero__lede{animation:rise-in .9s var(--ease) .44s both;}
+.js .monument{animation:rise-in 1s var(--ease) .58s both;}
+
+.monument{
+  display:block;
+  position:relative;
+  overflow:hidden;
+  margin-top:44px;
+  padding:38px 34px 34px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:var(--surface);
+  box-shadow:var(--shadow-panel);
+  text-decoration:none;
+  color:inherit;
+  transition:border-color .35s var(--ease-soft),transform .35s var(--ease);
+}
+/* The bloom is a decorative wash pinned to the top right of the panel. It is
+   the reason --bloom is a declared token: every colour used inside .monument is
+   checked against it in check.py, so the wash cannot quietly eat contrast. */
+.monument::before{
+  content:"";
+  position:absolute;
+  top:-55%;
+  right:-18%;
+  width:82%;
+  height:210%;
+  background:radial-gradient(closest-side,var(--bloom),transparent 78%);
+  opacity:.85;
+  pointer-events:none;
+  transition:opacity .5s var(--ease-soft);
+}
+/* An ember hairline traces the top edge on hover and focus. */
+.monument::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  transform:scaleX(0);
+  transition:transform .6s var(--ease);
+}
+.monument:hover,.monument:focus-visible{border-color:var(--gold-dim);transform:translateY(-3px);}
+.monument:hover::after,.monument:focus-visible::after{transform:scaleX(1);}
+.monument:hover::before,.monument:focus-visible::before{opacity:1;}
+/* Two plates side by side once there is room: the name and the action on the
+   left, the argument on the right. Below 860px they stack in the same order. */
+.monument__plate,.monument__brief{display:block;position:relative;}
+/* DOM order is the mobile order: name, then argument, then action. On desktop
+   the grid moves the action back under the name without touching that order. */
+@media (min-width:860px){
+  .monument{
+    display:grid;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1fr);
+    grid-template-areas:"plate brief" "cta brief";
+    grid-template-rows:auto 1fr;
+    column-gap:52px;
+    padding:48px 44px;
+  }
+  .monument__plate{grid-area:plate;align-self:end;}
+  .monument__brief{grid-area:brief;align-self:center;padding-left:26px;border-left:1px solid var(--border);}
+  .monument__cta{grid-area:cta;justify-self:start;align-self:start;}
+}
+.monument__sigil{
+  display:block;
+  width:52px;
+  height:52px;
+  margin-bottom:18px;
+}
+.js .monument__sigil{animation:sigil-breathe 5.5s var(--ease-soft) infinite;}
+.monument__eyebrow{
+  display:block;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--gold);
+}
+.monument__title{
+  display:block;
+  font-family:var(--font-display);
+  font-size:clamp(34px,5.6vw,58px);
+  line-height:1.05;
+  margin-top:10px;
+  color:var(--ink);
+}
+.monument__season{
+  display:block;
+  margin-top:10px;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-size:14px;
+  color:var(--accent-hi);
+}
+.monument__body{display:block;margin-top:18px;color:var(--ink);max-width:48ch;}
+.monument__stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+@media (min-width:860px){
+  .monument__brief .monument__body{margin-top:0;}
+}
+.monument__cta{
+  display:inline-block;
+  margin-top:26px;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-size:14px;
+  padding:11px 22px;
+  border-radius:var(--radius-md);
+  background:var(--accent);
+  color:var(--accent-ink);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.monument:hover .monument__cta,.monument:focus-visible .monument__cta{
+  transform:translateY(-1px);
+  box-shadow:0 0 0 4px rgba(255,90,54,.18);
+}
+
+/* The register. One row today. A second game adds a row here and a monument
+   above, and the page composition does not change shape. */
+.roster{margin-top:20px;list-style:none;}
+.roster__row{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:4px 20px;
+  padding:18px 0;
+  border-top:1px solid var(--border-soft);
+  align-items:baseline;
+}
+.roster__row:last-child{border-bottom:1px solid var(--border-soft);}
+.roster__no{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.14em;
+  font-size:13px;
+  color:var(--gold-dim);
+}
+.roster__name{
+  font-family:var(--font-display);
+  font-size:20px;
+  color:var(--ink);
+}
+.roster__state{
+  grid-column:2;
+  color:var(--ink-dim);
+  font-size:15px;
 }
 
 /* ---- sections and prose ---- */
@@ -132,10 +449,23 @@ h3{
 .prose ul,.prose ol{padding-left:20px;color:var(--ink-dim);}
 .prose li + li{margin-top:6px;}
 h3 + .prose{margin-top:10px;}
+/* Prose links grow their underline from the leading edge instead of blinking
+   colour, which reads as one continuous system with the nav pill sweep. */
+.prose a{
+  text-decoration:none;
+  background-image:linear-gradient(var(--accent-hi),var(--accent-hi));
+  background-repeat:no-repeat;
+  background-position:0 100%;
+  background-size:100% 1px;
+  transition:background-size .3s var(--ease),color .3s var(--ease);
+}
+.prose a:hover,.prose a:focus-visible{background-size:100% 2px;color:var(--ink);}
 
 /* ---- project card ---- */
 .card{
   display:block;
+  position:relative;
+  overflow:hidden;
   margin-top:20px;
   padding:24px;
   background:var(--surface);
@@ -144,9 +474,21 @@ h3 + .prose{margin-top:10px;}
   box-shadow:var(--shadow-panel);
   text-decoration:none;
   color:inherit;
-  transition:border-color .18s, transform .18s;
+  transition:border-color .3s var(--ease-soft), transform .3s var(--ease);
 }
-.card:hover,.card:focus-visible{border-color:var(--gold-dim);transform:translateY(-2px);}
+.card::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  transform:scaleX(0);
+  transition:transform .6s var(--ease);
+}
+.card:hover,.card:focus-visible{border-color:var(--gold-dim);transform:translateY(-3px);}
+.card:hover::after,.card:focus-visible::after{transform:scaleX(1);}
 .card__head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between;}
 .card__title{font-family:var(--font-display);font-size:22px;color:var(--accent-hi);}
 .card__host{
@@ -182,21 +524,43 @@ h3 + .prose{margin-top:10px;}
   border-radius:var(--radius-md);
   background:var(--accent);
   color:var(--accent-ink);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.card:hover .card__cta,.card:focus-visible .card__cta{
+  transform:translateY(-1px);
+  box-shadow:0 0 0 4px rgba(255,90,54,.18);
 }
 
 /* ---- guide index cards ---- */
 .guide-list{display:grid;gap:14px;margin-top:20px;list-style:none;}
 .guide-list a{
   display:block;
-  padding:18px 20px;
+  position:relative;
+  padding:18px 20px 18px 22px;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--radius-lg);
   text-decoration:none;
   color:inherit;
-  transition:border-color .18s;
+  transition:border-color .3s var(--ease-soft),transform .3s var(--ease);
 }
-.guide-list a:hover,.guide-list a:focus-visible{border-color:var(--gold-dim);}
+/* A gold bar grows down the leading edge on hover, which is the same left to
+   right, quiet to lit gesture the nav pills and prose links use. */
+.guide-list a::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  top:-1px;
+  bottom:-1px;
+  width:2px;
+  border-radius:var(--radius-lg) 0 0 var(--radius-lg);
+  background:var(--accent);
+  transform:scaleY(0);
+  transform-origin:top;
+  transition:transform .35s var(--ease);
+}
+.guide-list a:hover::before,.guide-list a:focus-visible::before{transform:scaleY(1);}
+.guide-list a:hover,.guide-list a:focus-visible{border-color:var(--gold-dim);transform:translateX(2px);}
 .guide-list b{
   display:block;
   font-family:var(--font-cond);
@@ -242,6 +606,20 @@ h3 + .prose{margin-top:10px;}
   margin-bottom:4px;
 }
 .facts span{color:var(--ink-dim);font-size:15px;}
+/* On the hub the editorial rules run two up, so the page varies density instead
+   of pouring every section into the same 70ch column under a full width
+   monument. Guide pages keep the single column measure. */
+@media (min-width:860px){
+  .app--wide .facts{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:48px;
+    max-width:none;
+  }
+  /* Two columns means the last row is the last two items, not just the last. */
+  .app--wide .facts li:last-child{border-bottom:none;}
+  .app--wide .facts li:nth-last-child(-n+2){border-bottom:1px solid var(--border-soft);}
+}
 
 /* ---- callout ---- */
 .note{
@@ -293,6 +671,7 @@ thead th{
 }
 tbody th{font-weight:600;color:var(--ink);white-space:nowrap;}
 td{color:var(--ink-dim);}
+tbody tr:hover th,tbody tr:hover td{background:var(--surface);}
 tbody tr:last-child th,tbody tr:last-child td{border-bottom:none;}
 
 /* ---- sources ---- */
@@ -327,3 +706,37 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:none;}
 }
 .site-footer p + p{margin-top:8px;}
 .site-footer nav a{margin-right:18px;}
+
+@media (max-width:640px){
+  .hero{padding-top:36px;}
+  .monument{padding:28px 22px 26px;}
+  .roster__row{grid-template-columns:1fr;gap:2px;}
+  .roster__state{grid-column:1;}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   This is a floor, not a dial. Everything above is switched off:
+   the ember field is removed from the document, every keyframe
+   animation and transition is collapsed, scroll reveals render
+   in their final state, and cross document transitions stop
+   animating. What is left is the same static, complete page.
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    animation-delay:0ms!important;
+    transition-duration:.01ms!important;
+    transition-delay:0ms!important;
+    scroll-behavior:auto!important;
+  }
+  .embers{display:none!important;}
+  .js .reveal,.js .reveal.is-in{opacity:1!important;transform:none!important;transition:none!important;}
+  .monument::after,.card::after,.sitenav a::before,.guide-list a::before{display:none!important;}
+  .monument:hover,.card:hover,.guide-list a:hover,
+  .monument:focus-visible,.card:focus-visible,.guide-list a:focus-visible{transform:none!important;}
+  .monument:hover .monument__cta,.card:hover .card__cta,
+  .monument:focus-visible .monument__cta,.card:focus-visible .card__cta{transform:none!important;}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important;}
+}

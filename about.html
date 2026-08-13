@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
+<script>document.documentElement.className="js";</script>
+<script src="/site.js" defer></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6075501159466539"
      crossorigin="anonymous"></script>
 </head>
@@ -22,16 +24,15 @@
     <h1 class="topbar__title">About this site, and how it is <em>written</em></h1>
     <p class="topbar__sub">One person, a seasonal Diablo IV habit, and a preference for small static pages over spreadsheets. This page covers who writes the guides, where the information comes from, and what happens when a detail cannot be confirmed.</p>
     <p class="updated">Last updated 13 August 2026.</p>
-    <nav class="sitenav">
+    <nav class="sitenav" aria-label="Site">
       <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">The Ledger</a>
+      <a href="/d4/">Diablo IV</a>
       <a href="/about.html" aria-current="page">About</a>
       <a href="/contact.html">Contact</a>
     </nav>
   </header>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Who</p>
     <h2>Sebastian Schillman</h2>
     <div class="prose longform">
@@ -41,17 +42,17 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Why</p>
     <h2>What this site is for</h2>
     <div class="prose longform">
       <p>Season guides are good at telling you what is strong. They are bad at telling you what you personally have already done. By week two of a season you have read the same tier list four times and you still cannot remember whether you took the Helltide node or just meant to.</p>
-      <p>So the tools here are built around state, not advice. The <a href="https://d4.schillman.se">Season 14 Farming Ledger</a> is a checklist of the farming decisions that actually matter, tickable, filterable, and stored in your own browser. The written <a href="/guides.html">guides</a> are the longer explanations sitting behind the terse checklist lines, for the parts of the season where understanding the mechanic changes what you do rather than just how fast you do it.</p>
+      <p>So the tools here are built around state, not advice. The <a href="https://d4.schillman.se">Season 14 Farming Ledger</a> is a checklist of the farming decisions that actually matter, tickable, filterable, and stored in your own browser. The written <a href="/d4/guides.html">guides</a> are the longer explanations sitting behind the terse checklist lines, for the parts of the season where understanding the mechanic changes what you do rather than just how fast you do it.</p>
       <p>Both are static HTML. No account, no login, no server holding anything of yours. The ledger is a single file, which means you can save it to disk and it keeps working with the network off, which is the point when you are alt tabbing out of a game.</p>
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Editorial</p>
     <h2>The rules every page here is held to</h2>
     <div class="prose longform">
@@ -85,7 +86,7 @@
     </ul>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Independence</p>
     <h2>Money, affiliation and what that changes</h2>
     <div class="prose longform">
@@ -95,7 +96,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Build</p>
     <h2>How the site itself is made</h2>
     <div class="prose longform">
@@ -104,7 +105,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Reach me</p>
     <h2>Corrections are the most useful thing you can send</h2>
     <div class="prose longform">
@@ -113,10 +114,10 @@
   </section>
 
   <footer class="site-footer">
-    <nav>
+    <nav aria-label="Footer">
       <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">Season 14 Ledger</a>
+      <a href="/d4/">Diablo IV</a>
+      <a href="/d4/guides.html">Diablo IV guides</a>
       <a href="/about.html">About</a>
       <a href="/contact.html">Contact</a>
       <a href="/privacy.html">Privacy</a>

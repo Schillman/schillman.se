@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
+<script>document.documentElement.className="js";</script>
+<script src="/site.js" defer></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6075501159466539"
      crossorigin="anonymous"></script>
 </head>
@@ -22,16 +24,15 @@
     <h1 class="topbar__title">Contact and <em>corrections</em></h1>
     <p class="topbar__sub">This site is written and maintained by one person, Sebastian Schillman, in Sweden. Everything below reaches me directly. There is no support queue and no form that quietly emails a shared inbox nobody reads.</p>
     <p class="updated">Last updated 13 August 2026.</p>
-    <nav class="sitenav">
+    <nav class="sitenav" aria-label="Site">
       <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">The Ledger</a>
+      <a href="/d4/">Diablo IV</a>
       <a href="/about.html">About</a>
       <a href="/contact.html" aria-current="page">Contact</a>
     </nav>
   </header>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Fastest route</p>
     <h2>Open an issue on GitHub</h2>
     <div class="prose longform">
@@ -45,7 +46,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Corrections</p>
     <h2>What makes a correction easy to act on</h2>
     <div class="prose longform">
@@ -61,7 +62,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Bugs</p>
     <h2>If a tool is broken rather than wrong</h2>
     <div class="prose longform">
@@ -70,7 +71,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="reveal">
     <p class="section-label">Other</p>
     <h2>Rights, advertising and everything else</h2>
     <ul class="facts">
@@ -94,10 +95,10 @@
   </section>
 
   <footer class="site-footer">
-    <nav>
+    <nav aria-label="Footer">
       <a href="/">Home</a>
-      <a href="/guides.html">Guides</a>
-      <a href="https://d4.schillman.se">Season 14 Ledger</a>
+      <a href="/d4/">Diablo IV</a>
+      <a href="/d4/guides.html">Diablo IV guides</a>
       <a href="/about.html">About</a>
       <a href="/contact.html">Contact</a>
       <a href="/privacy.html">Privacy</a>
