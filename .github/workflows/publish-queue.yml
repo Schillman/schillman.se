@@ -1,0 +1,65 @@
+name: Publish queued page
+
+# Pages are written in batches but must go live spread out: bulk publishing is
+# itself a scaled content abuse signal, and this domain is already on its second
+# AdSense rejection. The `queue` branch is a linear extension of `main`, one
+# commit per page. This job fast forwards `main` by exactly one of those commits
+# once INTERVAL_DAYS have passed since the last `publish:` commit. Netlify
+# deploys on push, so the page goes live on its own date with no build step.
+#
+# To queue another page: branch from `queue`, commit the page together with its
+# entries in guides.html, index.html and sitemap.xml, subject prefixed
+# `publish:`, and push. Order in the branch is publish order.
+
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Publish the next queued page now, ignoring the interval'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast forward main by one queued page
+        env:
+          INTERVAL_DAYS: 4
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin main queue
+
+          if ! git merge-base --is-ancestor origin/main origin/queue; then
+            echo "queue has diverged from main. Rebase queue onto main, then re-run."
+            exit 1
+          fi
+
+          NEXT=$(git rev-list origin/main..origin/queue | tail -1)
+          if [ -z "$NEXT" ]; then
+            echo "Queue is empty, nothing left to publish."
+            exit 0
+          fi
+
+          LAST=$(git log origin/main --grep='^publish:' -1 --format=%ct)
+          AGE=$(( ( $(date +%s) - LAST ) / 86400 ))
+          echo "Last publish was ${AGE} day(s) ago, interval is ${INTERVAL_DAYS} day(s)."
+
+          if [ "${FORCE}" != "true" ] && [ "${AGE}" -lt "${INTERVAL_DAYS}" ]; then
+            echo "Too soon. Waiting."
+            exit 0
+          fi
+
+          echo "Publishing: $(git log -1 --format=%s "${NEXT}")"
+          git push origin "${NEXT}:main"
+          echo "$(git rev-list origin/main..origin/queue | wc -l) page(s) still queued after this one."

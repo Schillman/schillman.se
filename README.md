@@ -19,6 +19,26 @@ The Diablo IV Season 14 Farming Ledger at `d4.schillman.se` is a separate repo, 
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
 | `ads.txt` | AdSense authorized seller record. Lives on the root domain and covers the subdomains too. |
 | `robots.txt`, `sitemap.xml` | Crawl hints. Add every new page to the sitemap and bump its `lastmod`. |
+| `.github/workflows/publish-queue.yml` | Releases one queued page every `INTERVAL_DAYS` (currently 4). See below. |
+
+## Publishing a new guide
+
+Guides get written in batches and published spread out, because bulk publishing
+is a scaled content abuse signal on its own. The `queue` branch is a linear
+extension of `main` holding one commit per unpublished page.
+
+- A queued commit contains the page **and** its entries in `guides.html`,
+  `index.html`, `sitemap.xml` and this README, so every commit is a valid site.
+  Never add a link to a page that a later commit introduces: `check.py` fails on
+  it, and until that commit lands it is a 404 for real visitors.
+- Commit subjects on both branches start with `publish:`. The workflow measures
+  the interval from the last such commit on `main`, so ordinary fixes pushed to
+  `main` do not reset the clock.
+- Order in `queue` is publish order. To change the interval, edit
+  `INTERVAL_DAYS` in the workflow. To release the next page immediately, run the
+  workflow manually with `force` checked.
+- If you commit to `main` directly, rebase `queue` onto it, otherwise the
+  fast forward is refused and the job fails loudly rather than publishing early.
 
 ## Rules that are not obvious from the code
 
