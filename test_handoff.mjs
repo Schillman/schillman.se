@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-/* Tests the progress handoff decoder on /d4/ledger.html.
+/* Tests the two ways progress gets into /d4/ledger.html: the fragment handoff
+ * from d4.schillman.se, and the Import button.
  *
  *     node test_handoff.mjs
  *
  * No browser, no server, no framework, no dependencies. The rest of that page
- * needs a DOM and is not covered here; this covers the one function that takes
- * input from a stranger's link and whose failure mode is destroying a season of
- * someone's progress.
+ * needs a DOM and is not covered here; this covers the functions that take input
+ * from a stranger's link or from the clipboard and whose failure mode is
+ * destroying a season of someone's progress.
  *
  * It does not carry a copy of the code under test. It slices the pure block out
  * of d4/ledger.html between the sentinels in that file and evaluates it, so what
@@ -24,9 +25,10 @@ const to = page.indexOf(END);
 assert.ok(from !== -1 && to > from,
   "handoff sentinels not found in d4/ledger.html, so nothing was tested");
 
-const { decodeHandoff, mergeHandoff } = new Function(
+const { decodeHandoff, parseBackup, mergeProgress } = new Function(
   page.slice(from + START.length, to) +
-  "\nreturn { decodeHandoff: decodeHandoff, mergeHandoff: mergeHandoff };")();
+  "\nreturn { decodeHandoff: decodeHandoff, parseBackup: parseBackup," +
+  " mergeProgress: mergeProgress };")();
 
 const b64url = value => Buffer.from(JSON.stringify(value)).toString("base64url");
 const KNOWN = new Set(["esc-1", "esc-2", "esc-3", "esc-4"]);
@@ -89,11 +91,11 @@ rejects("a bare string", b64url("esc-1"));
 rejects("null", b64url(null));
 rejects("an empty payload", "");
 
-console.log("\nmergeHandoff, last write wins per item key");
+console.log("\nmergeProgress, last write wins per item key");
 
 test("an incoming key overwrites the local value", () => {
   const local = { "esc-1": true, "esc-2": true };
-  const carried = mergeHandoff(local, { "esc-2": false }, isKnownId);
+  const carried = mergeProgress(local, { "esc-2": false }, isKnownId);
   assert.deepEqual(local, { "esc-1": true, "esc-2": false });
   assert.equal(carried, 1);
 });
@@ -102,35 +104,112 @@ test("a local key the payload does not mention survives", () => {
   /* This is the Send my progress again case: the old page can send a second,
      overlapping map, and it must not look like a reset of everything else. */
   const local = { "esc-1": true, "esc-4": true };
-  const carried = mergeHandoff(local, { "esc-2": false, "esc-3": true }, isKnownId);
+  const carried = mergeProgress(local, { "esc-2": false, "esc-3": true }, isKnownId);
   assert.deepEqual(local, { "esc-1": true, "esc-4": true, "esc-2": false, "esc-3": true });
   assert.equal(carried, 2);
 });
 
 test("false is carried across as a value, not skipped as falsy", () => {
   const local = { "esc-1": true };
-  assert.equal(mergeHandoff(local, { "esc-1": false }, isKnownId), 1);
+  assert.equal(mergeProgress(local, { "esc-1": false }, isKnownId), 1);
   assert.equal(local["esc-1"], false);
 });
 
 test("an id that is not on this list is ignored and not counted", () => {
   const local = { "esc-1": true };
-  const carried = mergeHandoff(local, { "not-an-item": true, "esc-2": true }, isKnownId);
+  const carried = mergeProgress(local, { "not-an-item": true, "esc-2": true }, isKnownId);
   assert.deepEqual(local, { "esc-1": true, "esc-2": true });
   assert.equal(carried, 1);
 });
 
 test("a payload of nothing but unknown ids carries nothing", () => {
   const local = { "esc-1": true };
-  assert.equal(mergeHandoff(local, { "nope": true }, isKnownId), 0);
+  assert.equal(mergeProgress(local, { "nope": true }, isKnownId), 0);
   assert.deepEqual(local, { "esc-1": true });
 });
 
 test("an empty map carries nothing and changes nothing", () => {
   const local = { "esc-1": true };
-  assert.equal(mergeHandoff(local, {}, isKnownId), 0);
+  assert.equal(mergeProgress(local, {}, isKnownId), 0);
   assert.deepEqual(local, { "esc-1": true });
 });
 
-console.log(failures ? `\n${failures} FAILURE(S)` : "\nall handoff tests passed");
+console.log("\nparseBackup, blobs pasted into the Import prompt");
+
+/* Import is parseBackup and then mergeProgress, and the bug being pinned here is
+   that it used to be neither: it wrote every key it was handed straight into
+   storage. So the assertions run the pair, the way the click handler does, and
+   check both what landed in storage and the two numbers the toast reports. */
+function importBlob(local, raw) {
+  const incoming = parseBackup(raw);
+  const offered = Object.keys(incoming).length;
+  const restored = mergeProgress(local, incoming, isKnownId);
+  return { restored, skipped: offered - restored };
+}
+
+test("a blob of nothing but known ids restores all of them", () => {
+  const local = {};
+  const counts = importBlob(local, JSON.stringify({ "esc-1": true, "esc-2": false, "esc-3": true }));
+  assert.deepEqual(local, { "esc-1": true, "esc-2": false, "esc-3": true });
+  assert.deepEqual(counts, { restored: 3, skipped: 0 });
+});
+
+test("a blob mixing known and unknown ids stores only the known ones", () => {
+  /* The reported bug exactly: an id from an old season, a typo and a hand
+     edited key all used to be written to storage and then never render. */
+  const local = {};
+  const counts = importBlob(local, JSON.stringify({
+    "esc-1": true, "s13-legacy": true, "esc-2": true, "esc-1 ": true, "": true
+  }));
+  assert.deepEqual(local, { "esc-1": true, "esc-2": true },
+    "an id that is not on this list reached storage");
+  assert.deepEqual(counts, { restored: 2, skipped: 3 });
+});
+
+test("a blob of entirely unknown ids writes nothing at all", () => {
+  const local = { "esc-1": true };
+  const counts = importBlob(local, JSON.stringify({ "nope": true, "old-1": false }));
+  assert.deepEqual(local, { "esc-1": true }, "storage was touched by a blob with nothing on this list");
+  assert.deepEqual(counts, { restored: 0, skipped: 2 });
+});
+
+test("values are coerced, so a hand edited 1/0 backup still restores", () => {
+  const local = {};
+  assert.deepEqual(importBlob(local, '{"esc-1":1,"esc-2":0}'), { restored: 2, skipped: 0 });
+  assert.deepEqual(local, { "esc-1": true, "esc-2": false });
+});
+
+test("prototype keys are ignored like any other unknown id", () => {
+  const local = {};
+  importBlob(local, '{"__proto__":true,"constructor":true}');
+  assert.deepEqual(local, {});
+  assert.equal(({}).__proto__, Object.prototype, "Object.prototype was reachable through a backup");
+});
+
+console.log("\nparseBackup, malformed input that must throw before anything is written");
+
+/* Each of these throws, so the click handler takes its catch branch, shows the
+   failure toast and never reaches mergeProgress, saveState or storage. */
+const rejectsBlob = (name, raw) =>
+  test(name, () => assert.throws(() => parseBackup(raw)));
+
+rejectsBlob("not JSON at all", "not json");
+rejectsBlob("truncated JSON", '{"esc-1":true,"esc-2":fal');
+rejectsBlob("a trailing comma", '{"esc-1":true,}');
+rejectsBlob("an array", '["esc-1","esc-2"]');
+rejectsBlob("an array of booleans", "[true,false]");
+rejectsBlob("a bare number", "42");
+rejectsBlob("a bare string", '"esc-1"');
+rejectsBlob("null", "null");
+rejectsBlob("an empty blob", "");
+
+test("a blob that goes bad partway through writes nothing, not a prefix of itself", () => {
+  /* parseBackup builds a whole object before returning, so there is no state to
+     roll back: the merge is never reached. This is the half apply case. */
+  const local = { "esc-1": false };
+  assert.throws(() => importBlob(local, '{"esc-1":true,"esc-2":true'));
+  assert.deepEqual(local, { "esc-1": false });
+});
+
+console.log(failures ? `\n${failures} FAILURE(S)` : "\nall handoff and import tests passed");
 process.exit(failures ? 1 : 0);

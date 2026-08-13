@@ -424,9 +424,6 @@ a.topbar__mark:hover{color:var(--accent-hi);}
   background:var(--surface-hi);
 }
 .chip.is-off{opacity:.45;}
-.chips__all{
-  border-style:dashed;
-}
 
 /* ============================================================
    CATEGORY + ITEM LIST
@@ -1554,30 +1551,32 @@ const DESCRIPTIONS = {
   }
 
   /* ==============================================================
-     PROGRESS HANDOFF
-     The old page at d4.schillman.se sends people here with their
-     progress in the fragment, as #import=<base64url of the same
-     {itemId:boolean} map this page stores>. That sender is already
-     shipped, so this end only reads the format and never defines
-     it.
+     TAKING PROGRESS IN
+     Two ways in, one set of rules. The old page at d4.schillman.se
+     sends people here with their progress in the fragment, as
+     #import=<base64url of the same {itemId:boolean} map this page
+     stores>; the Import button takes that same map as plain JSON
+     pasted from Export. That sender is already shipped, so this end
+     only reads the format and never defines it.
 
-     The fragment is attacker supplied as far as this page is
-     concerned: it is whatever was in the link someone clicked. So
-     it is fully decoded and validated into a local object before a
-     single key is written, and localStorage is only touched once
-     that has succeeded. Someone arriving on a truncated link has a
-     season of ticks in this browser, and the failure mode has to be
-     "nothing happened, here is what to do instead", never a
-     half applied or cleared map.
+     Both are supplied by someone else as far as this page is
+     concerned: one is whatever was in a link that was clicked, the
+     other is whatever was in the clipboard. So both are fully
+     decoded and validated into a local object before a single key
+     is written, and localStorage is only touched once that has
+     succeeded. Someone arriving on a truncated link has a season of
+     ticks in this browser, and the failure mode has to be "nothing
+     happened, here is what to do instead", never a half applied or
+     cleared map.
 
-     The two functions below are pure and have no DOM in them, so
+     The three functions below are pure and have no DOM in them, so
      they are the half that can be tested without a browser, and
      they are the half worth testing: everything else here is
      wiring. test_handoff.mjs at the repo root slices this block
      out between the sentinels and runs it, so the code it asserts
      on is this code and not a copy of it. Keep the sentinels, keep
      the block DOM free, and run node test_handoff.mjs after
-     touching either function.
+     touching any of them.
      ============================================================== */
   /* --- pure handoff logic, extracted verbatim by test_handoff.mjs --- */
   function decodeHandoff(payload){
@@ -1591,11 +1590,26 @@ const DESCRIPTIONS = {
     return data;
   }
 
+  /* A pasted backup is the same {itemId:boolean} map as the fragment carries,
+     written as plain JSON instead of base64url. Validated whole and copied into
+     a fresh object before it is returned, so a blob that goes bad halfway
+     through throws here and nothing has been written yet. Values are coerced
+     rather than rejected, because Export writes true/false but a hand edited
+     backup may well carry 1/0 and that is not worth refusing. */
+  function parseBackup(raw){
+    var data = JSON.parse(raw);
+    if(!data || typeof data !== "object" || Array.isArray(data)) throw new Error("not an object");
+    var out = {};
+    Object.keys(data).forEach(function(k){ out[k] = !!data[k]; });
+    return out;
+  }
+
   /* Last write wins per item key: an incoming key overwrites the local value,
      a local key the payload does not mention is left alone, and an id that is
-     not on this list is ignored because it cannot mean anything here. Returns
-     how many were carried across, which is what the toast reports. */
-  function mergeHandoff(target, incoming, isKnownId){
+     not on this list is ignored because it cannot mean anything here, whether
+     it came from an old season, a typo or a hand edited blob. Returns how many
+     were carried across, which is what both toasts report. */
+  function mergeProgress(target, incoming, isKnownId){
     var carried = 0;
     Object.keys(incoming).forEach(function(id){
       if(!isKnownId(id)) return;
@@ -1627,7 +1641,7 @@ const DESCRIPTIONS = {
       return;
     }
 
-    var carried = mergeHandoff(state, incoming, function(id){ return !!itemIndex[id]; });
+    var carried = mergeProgress(state, incoming, function(id){ return !!itemIndex[id]; });
     if(!carried){
       showToast("That transfer link had nothing on this list. Nothing was changed.", 8000);
       return;
@@ -1810,15 +1824,28 @@ const DESCRIPTIONS = {
     document.getElementById("import-btn").addEventListener("click", function(){
       var raw = window.prompt("Paste your backup text:");
       if(!raw) return;
+
+      var incoming;
       try{
-        var incoming = JSON.parse(raw);
-        Object.keys(incoming).forEach(function(k){ state[k] = !!incoming[k]; });
-        saveState();
-        refreshFromState();
-        showToast("Progress restored");
+        incoming = parseBackup(raw);
       }catch(err){
-        showToast("That backup text couldn't be read");
+        showToast("That backup text could not be read. Nothing was changed.", 5000);
+        return;
       }
+
+      var offered = Object.keys(incoming).length;
+      var restored = mergeProgress(state, incoming, function(id){ return !!itemIndex[id]; });
+      var skipped = offered - restored;
+      if(!restored){
+        showToast("That backup had nothing on this list. Nothing was changed.", 8000);
+        return;
+      }
+      saveState();
+      refreshFromState();
+      showToast(
+        (restored === 1 ? "1 item restored" : restored + " items restored") +
+        (skipped ? ", " + skipped + " ignored because they are not on this list" : ""),
+        skipped ? 8000 : 2200);
     });
   }
 
