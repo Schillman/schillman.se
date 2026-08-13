@@ -242,7 +242,7 @@ PAIRS = [
     # declared token precisely so that the text sitting on top of the hero glow
     # and the monument panel gets computed rather than assumed.
     ("ink", "bloom", 4.5, "monument body text over the ember bloom"),
-    ("ink-dim", "bloom", 4.5, "hero lede over the ember bloom"),
+    ("ink-dim", "bloom", 4.5, "topbar lede and checked-on date over the ember bloom"),
     ("gold", "bloom", 4.5, "monument eyebrow over the ember bloom"),
     ("accent-hi", "bloom", 4.5, "season line and links over the ember bloom"),
     ("gold-dim", "bloom", 3.0, "hairline rule over the ember bloom"),
