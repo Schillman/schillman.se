@@ -46,11 +46,19 @@ typography:
     fontWeight: 400
     lineHeight: 1.7
     letterSpacing: "normal"
+  mono:
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "0.92em"
+    fontWeight: 400
+    lineHeight: 1.6
+    letterSpacing: "normal"
 rounded:
+  marker: "2px"
   sm: "4px"
   md: "8px"
   lg: "14px"
   pill: "99px"
+  dot: "50%"
 spacing:
   xs: "6px"
   sm: "10px"
@@ -63,7 +71,7 @@ components:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.lg}"
-    padding: "48px 44px"
+    padding: "40px 44px"
   monument-cta:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.accent-ink}"
@@ -114,16 +122,19 @@ headlines and for the game name on the hub. Everything else is Barlow for
 reading and Barlow Condensed, tracked out and uppercased, for labels, stats and
 buttons.
 
-Two levels of chrome. The hub at `/` is a game selector and owns `.hero`,
-`.monument`. Every game section (`/d4/` today) reuses the shared
-page furniture and identifies itself with a `.topbar__crumb`: the wordmark, a
-hairline, the game name. Nothing in the stylesheet is Diablo specific, so a
+Two levels of chrome. The hub at `/` is a game selector and owns `.hero` and
+`.monument`. Every game section (`/d4/` today) reuses the shared page furniture
+and identifies itself with a `.topbar__crumb`: the wordmark, a hairline, the
+game name. Nothing in the stylesheet is Diablo specific, so a
 second game needs a directory and a monument, not a new system.
 
 The single game state is a design decision, not a gap. The hub gives its one
-entry a full width monument and follows it with a register that states what
-earns a second row. A card grid with one card in it would have read as three
-missing cards; this composition reads the same at one entry and at four.
+entry a full width monument and then says nothing else about it. A card grid
+with one card reads as three missing cards. A numbered register under the
+monument was built and then cut for the same reason: a one row list with an `01`
+in the margin is the same grid in a different shape, and it made the page count
+itself. The monument is the whole answer, and a second game is a second
+monument.
 
 ## Colors
 
@@ -170,9 +181,12 @@ for the hero lede. A page that ignores the cap looks wrong immediately.
   reading (every guide page). `.app--wide` at `1080px` is the hub only.
 - One spacing rhythm: `44px` between sections, `18px` to `28px` inside them,
   more space above a heading than below it.
-- Breakpoints are two. `860px` turns the monument into its two column grid and
-  the hub's editorial rules into two columns. `640px` tightens the monument
-  padding.
+- Four breakpoints. `min-width:860px` turns the monument into its two column
+  grid and the hub's editorial rules into two columns; `max-width:859px` stacks
+  the monument as name, action, argument. `max-width:640px` tightens the monument
+  padding. `min-width:860px and max-height:820px` tightens the hero's vertical
+  rhythm on short laptops so the primary action stays in the first viewport, and
+  it never touches the headline scale.
 - Tables always sit inside `.table-scroll` so a wide table scrolls itself
   instead of scrolling the page.
 
@@ -192,10 +206,11 @@ contrast checked against `bloom`.
 
 ## Shapes
 
-Three radii and nothing else: `14px` on panels, `8px` on buttons and callouts,
-a full pill on chips and nav. `4px` exists only on the focus ring. Rules are
-always `1px` and always a gradient that fades to transparent at one end, which
-is the site's signature line.
+Three radii carry the form language: `14px` on panels, `8px` on buttons and
+callouts, a full pill on chips and nav. `4px` exists only on the focus ring, and
+two decorative values exist only as marks, `2px` on the square bullet and `50%`
+on the ember spark. Rules are always `1px` and always a gradient that fades to
+transparent at one end, which is the site's signature line.
 
 ## Components
 
@@ -251,7 +266,12 @@ changing in place.
 - **Do** keep content visible without JavaScript. Anything hidden at rest is
   gated on `.js`.
 - **Don't** introduce a second accent. Gold is framing and labels.
-- **Don't** add a fourth radius or a second easing pair.
+- **Don't** add a fourth structural radius or a second easing pair.
+- **Do** treat the type ramp as the one part of this system that is looser than
+  it should be. It carries about twenty literal sizes inherited from before the
+  hub split, the design detector flags every one of them as advisory, and
+  tightening it means changing the look of three verified guide pages. It is a
+  real debt, deliberately not paid here.
 - **Don't** put text over the ember bloom without a `bloom` pair in `PAIRS`.
 - **Don't** use Cinzel below 20px or for anything that is not a title.
 - **Don't** add an external font, script or stylesheet beyond the Google Fonts
