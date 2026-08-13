@@ -30,7 +30,15 @@ a different shape, and it made the page count itself.
 that is deliberate rather than an oversight. It is a single file tool people save
 to disk and use with the network off while playing, so it carries its own inline
 `<style>` and its own inline scripts, including an inline SVG sprite for its
-icons. Its site chrome (breadcrumb, section nav, footer) is therefore a copy of
+icons. Those glyphs are Phosphor Icons 2.1.1, MIT licensed and lifted verbatim
+from the `@phosphor-icons/web@2.1.1` package the page used to fetch from a CDN
+at runtime, which meant that saved to disk with the network off every icon
+rendered as nothing. Regular weight for the four interface icons, duotone for
+the thirteen category icons, matching the classes the page used, so it looks
+exactly as it did. The attribution comment beside the sprite is a licence
+obligation, not a nicety. The category icons are data driven, so a symbol that
+does not exist is a content bug `check.py` cannot see: after touching the sprite,
+confirm every `icon` value in `DATA` still resolves to a `<symbol>`. Its site chrome (breadcrumb, section nav, footer) is therefore a copy of
 the matching rules from `site.css` rather than a link to it, and every link in
 that chrome is absolute so it still goes somewhere from a `file://` copy.
 
@@ -149,7 +157,25 @@ extension of `main` holding one commit per unpublished page.
 
 ## Checking a change
 
-There is no build step and no test framework. Run `python3 check.py .` before pushing. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css` or in the checked page's own inline `<style>`, every internal link resolves to a file that exists whether it is written absolute or relative, there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), `site.js` parses under `node --check`, and no custom property is declared without being referenced. The class check and the `&` check run on the markup with `<script>` bodies blanked out, because a `class="..."` built by string concatenation and an `&&` in a filter are JavaScript, not authoring mistakes, and the noise from scanning them is exactly what gets a file exempted. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
+There is no build step and no test framework. Run both of these before pushing:
+
+```
+python3 check.py .
+node test_handoff.mjs
+```
+
+`check.py` is the structural pass. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css` or in the checked page's own inline `<style>`, every internal link resolves to a file that exists whether it is written relative, root absolute, or as a full URL on this site's own origin (which is how the ledger writes its chrome, and how every canonical is written), there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), `site.js` parses under `node --check`, and no custom property is declared without being referenced. The class check and the `&` check run on the markup with `<script>` bodies blanked out, because a `class="..."` built by string concatenation and an `&&` in a filter are JavaScript, not authoring mistakes, and the noise from scanning them is exactly what gets a file exempted. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
+
+`test_handoff.mjs` is the one unit test in the repo, and it exists because
+`/d4/ledger.html` has one function that takes input from a stranger's link and
+whose failure mode is destroying a season of someone's progress. It covers the
+handoff decoder and the merge: the accepted shapes, the base64url alphabet and
+padding, and every malformed shape that has to be rejected before anything is
+written. It carries no copy of the code under test. It slices the pure block out
+of `d4/ledger.html` between the sentinel comments in that file and evaluates it,
+so breaking the page turns the test red. No browser, no server, no dependencies.
+If you move or rename those sentinels, the test fails loudly rather than passing
+on nothing. The rest of that page needs a DOM and is not covered.
 
 It was validated by mutation: each check was confirmed to fail on a deliberately broken copy of the site, not just to pass on the current one. The subdirectory walk and the relative link resolution were validated the same way, by confirming the previous version of `check.py` stays green on a mutation the current one catches. If you add a check, do the same, otherwise you cannot tell it from a check that never fires.
 

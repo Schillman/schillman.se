@@ -95,16 +95,30 @@ for f in html_files:
                      f"or in this page's inline <style>")
 
 # ---------- 2. internal links ----------
-# Both forms have to resolve. An absolute href is rooted at the publish
+# Three forms have to resolve. An absolute href is rooted at the publish
 # directory; a relative one is rooted at the directory of the page it sits in,
 # and that is the form that silently breaks when a page moves into /d4/. A href
 # ending in "/" is a directory, and Netlify serves its index.html.
+#
+# The third form is a full URL on this site's own origin. Canonicals have always
+# been written that way, and the ledger writes its whole site chrome that way on
+# purpose: it is a single file people save to disk, where a root relative href
+# resolves against file:/// and goes nowhere. A link is internal because of where
+# it points, not because of how it is spelled, so the origin is stripped and what
+# is left is resolved like any other absolute href. Without this the ledger is
+# the one page on the site whose internal links nothing checks, which is exactly
+# where a hand copied URL rots unnoticed.
 EXTERNAL = re.compile(r"^(?:[A-Za-z][\w+.-]*:|//)")
+# The lookahead is what stops this matching https://schillman.se.example.com/.
+OWN_ORIGIN = re.compile(r"^https://(?:www\.)?schillman\.se(?=/|$)")
 
 
 def resolve(page, href):
     """Filesystem path an internal reference points at, or None if external."""
     href = href.split("#", 1)[0].split("?", 1)[0]
+    if OWN_ORIGIN.match(href):
+        # A bare "https://schillman.se" is the site root, the same as "/".
+        href = OWN_ORIGIN.sub("", href) or "/"
     if not href or EXTERNAL.match(href):
         return None
     if href.startswith("/"):
