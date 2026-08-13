@@ -73,6 +73,7 @@ page offers "Send my progress again".
 | `d4/leveling.html` | Guide: the Season 14 experience meta, the Hellwyrm method, and the Paragon curve to 300. |
 | `d4/undercity.html` | Guide: the Undercity timer and Attunement, the full Tribute table, Bargains, and rune farming. |
 | `d4/gems.html` | Guide: the gem cost ladder, per socket effects, fragment farming, and the Horadric tier. |
+| `d4/obols.html` | Guide: Purveyor slot prices, the cheapest legal slot strategy, the obol cap, and income sources. |
 | `about.html` | Who writes the site, why, and the editorial rules every page is held to. Carries the sourcing policy in public. |
 | `contact.html` | How to reach me, what makes a correction actionable, and rights holder contact. |
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
