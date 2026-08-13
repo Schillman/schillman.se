@@ -2,11 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://schillman.se/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-13</lastmod>
+  </url>
+  <url>
+    <loc>https://schillman.se/guides.html</loc>
+    <lastmod>2026-08-13</lastmod>
   </url>
   <url>
     <loc>https://schillman.se/season-14-death-awakening.html</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-13</lastmod>
   </url>
   <url>
     <loc>https://schillman.se/war-plans.html</loc>
@@ -17,7 +21,15 @@
     <lastmod>2026-08-10</lastmod>
   </url>
   <url>
+    <loc>https://schillman.se/about.html</loc>
+    <lastmod>2026-08-13</lastmod>
+  </url>
+  <url>
+    <loc>https://schillman.se/contact.html</loc>
+    <lastmod>2026-08-13</lastmod>
+  </url>
+  <url>
     <loc>https://schillman.se/privacy.html</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-13</lastmod>
   </url>
 </urlset>

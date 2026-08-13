@@ -9,18 +9,22 @@ The Diablo IV Season 14 Farming Ledger at `d4.schillman.se` is a separate repo, 
 | File | What it is |
 |---|---|
 | `index.html` | The homepage. Links the ledger and indexes the guides. |
+| `guides.html` | The guide index, and the nav target on every page. A new guide gets added here and on the homepage. |
 | `site.css` | Shared stylesheet and the single source of truth for the design tokens. The ledger keeps its own inline copy on purpose, because it has to work as one file saved to disk. |
 | `season-14-death-awakening.html` | Guide: Pandemonium Ruptures, Realmwalkers, Deathtoll Chambers, the Corrupted Reaper, Glints of Hope, Pandemonium Fragments. |
 | `war-plans.html` | Guide: the War Plans board, the seven activity trees, and which nodes to take first. |
 | `escalations.html` | Guide: the Escalation chain and a full table of the Horadric Reserve affixes. |
+| `about.html` | Who writes the site, why, and the editorial rules every page is held to. Carries the sourcing policy in public. |
+| `contact.html` | How to reach me, what makes a correction actionable, and rights holder contact. |
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
-| `ads.txt` | AdSense authorized seller record. Must live on the root domain even though the ads run on the subdomain. |
+| `ads.txt` | AdSense authorized seller record. Lives on the root domain and covers the subdomains too. |
 | `robots.txt`, `sitemap.xml` | Crawl hints. Add every new page to the sitemap and bump its `lastmod`. |
 
 ## Rules that are not obvious from the code
 
-- **No ad code anywhere on this domain.** The homepage is a hub, and AdSense rejects ads on navigation pages with little content. Ads run only on `d4.schillman.se`. This was the reason for the first policy strike, and `privacy.html` now states in writing that schillman.se carries no advertising, so adding any means editing that page too.
-- Keep `privacy.html` accurate. If analytics or another ad provider is ever added, update that page and the date at the top of it in the same commit.
+- **AdSense approval is a root domain thing, and this domain is the one under review.** The first strike came from running ads on a thin hub page, and the reaction, moving all ad code to `d4.schillman.se`, was the wrong fix: the subdomain is a single page tool with no crawlable article text, so on its own it reads as thin content, and it got a second `Low value content` rejection on 13 August 2026. Ad code now sits on every page of this domain, which is the property being submitted, and the subdomain inherits approval once the root is approved.
+- **Content volume is the gate, not markup.** Google is judging whether this domain is a real site. That means substantive pages, an `about.html` and a `contact.html` that name a real person and a real route to them, and a publishing history rather than a single dump. New guides go up spread out over time, not ten in an afternoon, because bulk publishing is itself a scaled content abuse signal.
+- Keep `privacy.html` accurate. It now states that ads run across the domain and its subdomains. If analytics or another ad provider is ever added, update that page and the date at the top of it in the same commit.
 - **Every game mechanic, boss, node or currency named in a guide gets verified against a current source before it ships**, and each guide lists the sources it was checked against. Where a detail cannot be confirmed, say so on the page instead of smoothing it over. Community guides copy each other's typos: "Writhe and Rot" was wrong in the ledger for exactly that reason.
 - No em dashes and no curly quotes in copy, matching the ledger.
 - One accent color (ember `#ff5a36`). Any new text color gets its WCAG contrast checked against its real background, 4.5:1 for normal text and 3:1 for a boundary that is the only affordance on an interactive control.
