@@ -34,7 +34,7 @@ jobs:
 
       - name: Fast forward main by one queued page
         env:
-          INTERVAL_DAYS: 4
+          INTERVAL_DAYS: 2
           FORCE: ${{ inputs.force }}
         run: |
           set -euo pipefail

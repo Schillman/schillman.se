@@ -19,7 +19,7 @@ The Diablo IV Season 14 Farming Ledger at `d4.schillman.se` is a separate repo, 
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
 | `ads.txt` | AdSense authorized seller record. Lives on the root domain and covers the subdomains too. |
 | `robots.txt`, `sitemap.xml` | Crawl hints. Add every new page to the sitemap and bump its `lastmod`. |
-| `.github/workflows/publish-queue.yml` | Releases one queued page every `INTERVAL_DAYS` (currently 4). See below. |
+| `.github/workflows/publish-queue.yml` | Releases one queued page every `INTERVAL_DAYS` (currently 2). See below. |
 
 ## Publishing a new guide
 
