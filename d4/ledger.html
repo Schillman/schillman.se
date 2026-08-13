@@ -1,0 +1,1805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Season 14 Farming Ledger : Diablo IV : schillman.se</title>
+<meta name="description" content="An offline-friendly checklist for farming everything in Diablo IV Season 14, Season of Death Awakening. Tracks Aspects, Mythic Uniques, Lair Keys, gems, gold, Obols, Souls, Dust, Runes and Pandemonium Fragments. Progress saves locally in your browser.">
+<link rel="canonical" href="https://schillman.se/d4/ledger.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23100d0f'/%3E%3Cpath d='M32 10c-9 14-13 21-8 30 -3-7 4-10 8-6 4-4 11-1 8 6 5-9 1-16-8-30Z' fill='%23ff5a36'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6075501159466539"
+     crossorigin="anonymous"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Base: warm ash black (not pure #000). One interactive accent
+   (ember orange). Bronze/gold used only for framing and dividers.
+   Rarity colors (legendary orange, mythic crimson) are used ONLY
+   on the two categories that are genuinely tied to those in-game
+   rarity tiers (Aspects, Mythic Uniques) as a left-edge tag, not
+   as decoration elsewhere. Shape scale: 14px panels, 8px controls,
+   full-pill chips/buttons-that-toggle.
+   ============================================================ */
+:root{
+  --bg:#110d0f;
+  --bg-soft:#171216;
+  --surface:#1c161a;
+  --surface-hi:#241c21;
+  --border:#332830;
+  --border-soft:#241b20;
+  --ink:#eee6e1;
+  --ink-dim:#a89892;
+  --accent:#ff5a36;
+  --accent-hi:#ff7a52;
+  --accent-dim:#7a2e1c;
+  --accent-ink:#1c0d07;
+  --gold:#c9a15a;
+  --gold-dim:#8a7040;
+  --legendary:#ff8a3d;
+  --mythic:#ef4368;
+  /* Same token, same value, same job as in site.css: --bg with --accent over it
+     at 16 percent. The page wash used to be an inline rgba() stop, which meant
+     the site chrome sitting on top of it could not be contrast checked. As a
+     declared token it is a real background that check.py computes against. */
+  --bloom:#371915;
+  --radius-lg:14px;
+  --radius-md:8px;
+  --font-display:"Cinzel",serif;
+  --font-ui:"Barlow",system-ui,-apple-system,sans-serif;
+  --font-cond:"Barlow Condensed",system-ui,-apple-system,sans-serif;
+  --shadow-panel:0 1px 0 rgba(255,255,255,.03) inset, 0 10px 30px rgba(0,0,0,.35);
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, var(--bloom), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(201,161,90,.06), transparent 55%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--font-ui);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+/* fine grain texture, purely decorative, sits above the gradient */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+h1,h2,h3{margin:0;font-weight:600;}
+p{margin:0;}
+button{font-family:inherit;}
+input{font-family:inherit;}
+ul{list-style:none;margin:0;padding:0;}
+a{color:var(--accent-hi);}
+
+.app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 64px;}
+
+/* Inline icon sprite. Sized in em so the existing font-size rules on each icon
+   holder keep working unchanged. fill and stroke are inherited properties, so
+   they reach the symbol content through <use>. */
+.icon-sprite{display:none;}
+.icon{
+  width:1em;
+  height:1em;
+  flex:0 0 auto;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+/* focus visibility, applied globally */
+:focus-visible{outline:2px solid var(--accent-hi);outline-offset:2px;border-radius:4px;}
+
+/* ============================================================
+   TOP BAR
+   The site chrome (breadcrumb, section nav, footer nav) is a
+   copy of the matching rules in site.css rather than a link to
+   it. That is the whole point of this file: it has to keep
+   working saved to disk with the network off, so it cannot
+   depend on a stylesheet fetched from the site. check.py
+   resolves class tokens against site.css plus this page's own
+   inline <style>, so the copy is still checked, it is just
+   checked here.
+   ============================================================ */
+.topbar{
+  padding:40px 0 28px;
+  border-bottom:1px solid var(--border-soft);
+}
+/* The title and the progress panel are the row .topbar used to be. The crumb
+   sits above it and the section nav below, both full width. */
+.topbar__main{
+  display:flex;
+  flex-wrap:wrap;
+  gap:24px 32px;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-top:8px;
+}
+.topbar__mark{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--gold);
+}
+a.topbar__mark{text-decoration:none;display:inline-block;}
+a.topbar__mark:hover{color:var(--accent-hi);}
+/* Section breadcrumb: the site wordmark, a hairline, then the game you are in.
+   The only thing that says this is a page of a section, not a separate site. */
+.topbar__crumb{display:flex;align-items:center;flex-wrap:wrap;gap:10px;}
+.topbar__crumb::after{
+  content:"";
+  flex:1 1 40px;
+  height:1px;
+  background:linear-gradient(90deg,var(--gold-dim),transparent);
+  transform-origin:left;
+  animation:draw-x 1.1s cubic-bezier(.16,1,.3,1) .1s both;
+}
+@keyframes draw-x{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+.topbar__game{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-size:12px;
+  color:var(--ink-dim);
+  padding-left:10px;
+  border-left:1px solid var(--gold-dim);
+}
+
+/* Section nav. The pill outline is the affordance, so it is gold-dim and has to
+   clear 3:1 against both the page and its own fill, and the ember wash sweeps in
+   from the leading edge on hover and on keyboard focus identically. */
+.sitenav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 10px;
+  margin-top:24px;
+}
+.sitenav a{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-size:11.5px;
+  padding:5px 12px;
+  border-radius:99px;
+  border:1px solid var(--gold-dim);
+  background:var(--surface);
+  color:var(--ink-dim);
+  text-decoration:none;
+  transition:border-color .2s var(--ease),color .2s var(--ease);
+}
+.sitenav a::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(90deg,rgba(255,90,54,.28),rgba(255,90,54,.06));
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .32s var(--ease);
+}
+.sitenav a:hover::before,.sitenav a:focus-visible::before{transform:scaleX(1);}
+.sitenav a:hover,.sitenav a:focus-visible{border-color:var(--gold);color:var(--ink);}
+.sitenav a[aria-current="page"]{
+  border-color:var(--accent);
+  color:var(--ink);
+  background:var(--surface-hi);
+}
+.topbar__title{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4.4vw,40px);
+  letter-spacing:.01em;
+  line-height:1.1;
+  margin-top:8px;
+  color:var(--ink);
+}
+.topbar__title em{
+  font-style:normal;
+  color:var(--accent-hi);
+}
+.topbar__sub{
+  margin-top:10px;
+  color:var(--ink-dim);
+  font-size:14.5px;
+  max-width:46ch;
+}
+.topbar__right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:14px;
+  min-width:220px;
+}
+.progress{
+  width:100%;
+}
+.progress__row{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  font-family:var(--font-cond);
+  margin-bottom:8px;
+}
+.progress__count{
+  font-size:22px;
+  font-weight:600;
+  color:var(--ink);
+}
+.progress__count small{
+  font-size:13px;
+  font-weight:500;
+  color:var(--ink-dim);
+  margin-left:6px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.progress__pct{
+  font-size:13px;
+  color:var(--ink-dim);
+  letter-spacing:.04em;
+}
+.progress__track{
+  height:7px;
+  border-radius:99px;
+  background:var(--surface-hi);
+  border:1px solid var(--border-soft);
+  overflow:hidden;
+}
+.progress__fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--accent-dim),var(--accent));
+  border-radius:99px;
+  transition:width .5s var(--ease);
+}
+.topbar__actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.btn{
+  appearance:none;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink-dim);
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.03em;
+  font-size:13px;
+  padding:9px 14px;
+  border-radius:var(--radius-md);
+  cursor:pointer;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease),transform .1s var(--ease);
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--gold-dim);color:var(--ink);}
+.btn:active{transform:translateY(1px);}
+.btn--danger.is-armed{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--accent-ink);
+}
+
+/* ============================================================
+   CONTROLS BAR (sticky)
+   ============================================================ */
+.controls{
+  position:sticky;
+  top:0;
+  z-index:5;
+  padding:16px 0;
+  margin-bottom:8px;
+  background:rgba(17,13,15,.86);
+  backdrop-filter:blur(10px) saturate(140%);
+  -webkit-backdrop-filter:blur(10px) saturate(140%);
+  border-bottom:1px solid var(--border-soft);
+}
+@media (prefers-reduced-transparency: reduce){
+  .controls{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none;}
+}
+.controls__top{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:12px;
+}
+.search{
+  position:relative;
+  flex:1 1 220px;
+  min-width:180px;
+}
+.search input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--ink);
+  padding:10px 14px 10px 36px;
+  border-radius:var(--radius-md);
+  font-size:14.5px;
+}
+.search input::placeholder{color:var(--ink-dim);}
+.search input:focus-visible{border-color:var(--accent);}
+.search__icon{
+  position:absolute;
+  left:11px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--ink-dim);
+  font-size:16px;
+  pointer-events:none;
+}
+.status-group{
+  display:flex;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:99px;
+  padding:3px;
+  flex:0 0 auto;
+}
+.status-btn{
+  appearance:none;
+  border:none;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--font-cond);
+  font-weight:600;
+  font-size:13px;
+  letter-spacing:.03em;
+  padding:7px 14px;
+  border-radius:99px;
+  cursor:pointer;
+  transition:background .15s var(--ease),color .15s var(--ease);
+}
+.status-btn.is-active{
+  background:var(--accent);
+  color:var(--accent-ink);
+}
+.pri-toggle{
+  appearance:none;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink-dim);
+  font-family:var(--font-cond);
+  font-weight:600;
+  font-size:13px;
+  letter-spacing:.03em;
+  padding:7px 14px;
+  border-radius:99px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  flex:0 0 auto;
+  white-space:nowrap;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease);
+}
+.pri-toggle:hover{border-color:var(--gold-dim);color:var(--ink);}
+.pri-toggle.is-active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.pri-toggle .icon{font-size:14px;}
+.chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.chip{
+  appearance:none;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink-dim);
+  font-family:var(--font-cond);
+  font-weight:600;
+  font-size:12.5px;
+  letter-spacing:.03em;
+  padding:7px 12px;
+  border-radius:99px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease),opacity .15s var(--ease);
+}
+.chip .icon{font-size:14px;}
+.chip.is-active{
+  border-color:var(--gold-dim);
+  color:var(--ink);
+  background:var(--surface-hi);
+}
+.chip.is-off{opacity:.45;}
+.chips__all{
+  border-style:dashed;
+}
+
+/* ============================================================
+   CATEGORY + ITEM LIST
+   ============================================================ */
+#checklist-root{margin-top:20px;}
+.category{
+  margin-bottom:22px;
+  background:var(--surface);
+  border:1px solid var(--border-soft);
+  border-left:3px solid var(--gold-dim);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-panel);
+  overflow:hidden;
+  transition:opacity .15s var(--ease);
+}
+.category.is-hidden{display:none;}
+.category--legendary{border-left-color:var(--legendary);}
+.category--mythic{border-left-color:var(--mythic);}
+.category__header{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:18px 20px;
+  border-bottom:1px solid var(--border-soft);
+}
+.category__icon{
+  flex:0 0 auto;
+  width:34px;
+  height:34px;
+  border-radius:9px;
+  background:var(--surface-hi);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--gold);
+  font-size:18px;
+}
+.category--legendary .category__icon{color:var(--legendary);}
+.category--mythic .category__icon{color:var(--mythic);}
+.category__heading{flex:1 1 auto;min-width:0;}
+.category__title{
+  font-family:var(--font-cond);
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:.01em;
+  color:var(--ink);
+}
+.category__blurb{
+  margin-top:4px;
+  font-size:13.5px;
+  color:var(--ink-dim);
+  max-width:60ch;
+}
+.category__count{
+  flex:0 0 auto;
+  font-family:var(--font-cond);
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink-dim);
+  background:var(--surface-hi);
+  border:1px solid var(--border-soft);
+  padding:5px 10px;
+  border-radius:99px;
+  white-space:nowrap;
+}
+.item-list{padding:6px 8px;}
+.item{border-radius:10px;transition:background .15s var(--ease);}
+.item:hover{background:var(--surface-hi);}
+.item.is-hidden{display:none;}
+.item__label{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:13px 12px;
+  cursor:pointer;
+}
+.item__check-input{
+  position:absolute;
+  opacity:0;
+  width:24px;
+  height:24px;
+  margin:0;
+  cursor:pointer;
+}
+.item__box{
+  flex:0 0 auto;
+  width:22px;
+  height:22px;
+  margin-top:1px;
+  border-radius:6px;
+  border:1.5px solid var(--border);
+  background:var(--bg-soft);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:transparent;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .1s var(--ease);
+}
+.item__check-icon{width:14px;height:14px;}
+.item__check-input:focus-visible + .item__box{outline:2px solid var(--accent-hi);outline-offset:2px;}
+.item__check-input:checked + .item__box{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--accent-ink);
+}
+@media (prefers-reduced-motion: no-preference){
+  .item__check-input:checked + .item__box{animation:pop .32s var(--ease);}
+  @keyframes pop{
+    0%{box-shadow:0 0 0 0 rgba(255,90,54,.55);}
+    60%{box-shadow:0 0 0 9px rgba(255,90,54,0);}
+    100%{box-shadow:0 0 0 0 rgba(255,90,54,0);}
+  }
+}
+.item__body{flex:1 1 auto;min-width:0;}
+.item__title{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  font-size:15px;
+  color:var(--ink);
+}
+.item.is-done .item__title{color:var(--ink-dim);text-decoration:line-through;text-decoration-color:var(--border);}
+.item__detail{
+  margin-top:3px;
+  font-size:13.5px;
+  line-height:1.5;
+  color:var(--ink-dim);
+  max-width:64ch;
+}
+.tag{
+  font-family:var(--font-cond);
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  color:var(--ink-dim);
+}
+.tag--priority{color:var(--accent-hi);border-color:var(--accent-dim);}
+.tag--s14-new{color:var(--gold);border-color:var(--gold-dim);}
+.tag--nerfed{color:#c86a6a;border-color:#5a3232;}
+.tag--early-game{color:#7fb8d6;border-color:#31505c;}
+.tag--late-game{color:#a893d6;border-color:#443a5c;}
+
+/* empty state */
+.empty-state{
+  display:none;
+  text-align:center;
+  padding:56px 20px;
+  color:var(--ink-dim);
+}
+.empty-state.is-visible{display:block;}
+.empty-state h3{font-family:var(--font-cond);font-size:18px;color:var(--ink);margin-bottom:6px;}
+.empty-state button{
+  margin-top:14px;
+  background:none;
+  border:1px solid var(--border);
+  color:var(--ink);
+  padding:8px 16px;
+  border-radius:99px;
+  cursor:pointer;
+  font-family:var(--font-cond);
+  font-weight:600;
+}
+.empty-state button:hover{border-color:var(--gold-dim);}
+
+/* footer */
+.site-footer{
+  margin-top:40px;
+  padding-top:24px;
+  border-top:1px solid var(--border-soft);
+  color:var(--ink-dim);
+  font-size:12.5px;
+  line-height:1.7;
+  max-width:70ch;
+}
+.site-footer p + p{margin-top:8px;}
+.site-footer nav{margin-bottom:8px;}
+.site-footer nav a{margin-right:18px;}
+
+/* toast */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  transform:translate(-50%,12px);
+  background:var(--surface-hi);
+  border:1px solid var(--gold-dim);
+  color:var(--ink);
+  padding:10px 18px;
+  border-radius:99px;
+  font-family:var(--font-cond);
+  font-weight:600;
+  font-size:13.5px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s var(--ease),transform .2s var(--ease);
+  z-index:20;
+}
+.toast.is-visible{opacity:1;transform:translate(-50%,0);}
+
+/* ============================================================
+   ITEM DESCRIPTION ICON + MODAL CARD
+   The icon is an 8px control; the card is a 14px panel. No new
+   colors: ember accent on the interactive icon, gold framing on
+   the card edge, same ink tokens as everywhere else.
+   ============================================================ */
+.item__info-btn{
+  flex:0 0 auto;
+  align-self:flex-start;
+  margin-top:0;
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink-dim);
+  border-radius:var(--radius-md);
+  cursor:pointer;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease);
+}
+.item__info-btn:hover{border-color:var(--gold-dim);color:var(--accent-hi);}
+.item__info-btn .icon{font-size:16px;}
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  z-index:40;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(8,5,7,.72);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  opacity:0;
+  transition:opacity .2s var(--ease);
+}
+.modal-overlay.is-open{opacity:1;}
+.modal-overlay[hidden]{display:none;}
+body.modal-open{overflow:hidden;}
+.modal{
+  width:min(560px,100%);
+  max-height:min(82vh,720px);
+  display:flex;
+  flex-direction:column;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--gold-dim);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-panel);
+  transform:translateY(8px) scale(.985);
+  transition:transform .2s var(--ease);
+}
+.modal--legendary{border-left-color:var(--legendary);}
+.modal--mythic{border-left-color:var(--mythic);}
+.modal-overlay.is-open .modal{transform:none;}
+.modal__header{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:20px 22px 14px;
+  border-bottom:1px solid var(--border-soft);
+}
+.modal__heading{flex:1 1 auto;min-width:0;}
+.modal__eyebrow{
+  font-family:var(--font-cond);
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  font-size:11.5px;
+  color:var(--gold);
+  margin-bottom:5px;
+}
+.modal__title{
+  font-family:var(--font-cond);
+  font-size:22px;
+  font-weight:700;
+  line-height:1.2;
+  color:var(--ink);
+}
+.modal__close{
+  flex:0 0 auto;
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  background:var(--surface-hi);
+  color:var(--ink-dim);
+  border-radius:var(--radius-md);
+  cursor:pointer;
+  transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease);
+}
+.modal__close:hover{border-color:var(--gold-dim);color:var(--ink);}
+.modal__close .icon{font-size:18px;}
+.modal__body{
+  padding:16px 22px 22px;
+  overflow-y:auto;
+  font-size:14.5px;
+  line-height:1.65;
+  color:var(--ink-dim);
+}
+.modal__body p{margin:0;}
+.modal__body p + p{margin-top:12px;}
+.modal__body strong{color:var(--ink);font-weight:600;}
+
+/* ============================================================
+   REDUCED MOTION
+   A floor, not a dial, matching site.css. animation:none rather
+   than a .001ms duration, because the crumb hairline is an
+   entrance animation that ends at its own natural state: with
+   the animation removed it lands on the finished frame with
+   certainty, while a collapsed duration only lands there if the
+   animation gets a tick at all. The nav wash is a decorative
+   pseudo element with no resting state to land on, so it is
+   removed from the document outright.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation:none !important;
+    transition:none !important;
+    scroll-behavior:auto !important;
+  }
+  .topbar__crumb::after{transform:none !important;}
+  .sitenav a::before{display:none !important;}
+}
+
+@media (max-width:640px){
+  .app{padding:0 14px 48px;}
+  .topbar{padding:28px 0 22px;}
+  .topbar__right{width:100%;}
+  .category__header{flex-wrap:wrap;row-gap:10px;}
+  .category__icon{order:1;}
+  .category__count{order:2;margin-left:auto;}
+  .category__heading{order:3;flex-basis:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     ICON SPRITE
+     These used to be Phosphor glyphs pulled from unpkg.com at
+     runtime, which quietly broke the one property this file is
+     built for: saved to disk with the network off, every icon on
+     the page rendered as nothing. They are inline symbols now, so
+     the file carries its own iconography the same way it carries
+     its own stylesheet. Purely decorative: every icon is inside an
+     aria-hidden wrapper or a control that already has a label.
+     ============================================================ -->
+<svg class="icon-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-stack" viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/><path d="M3 12.2 12 16.7l9-4.5"/><path d="M3 16.7 12 21.2l9-4.5"/></symbol>
+  <symbol id="i-sword" viewBox="0 0 24 24"><path d="M12 2.5 14.2 6.5V15h-4.4V6.5L12 2.5Z"/><path d="M8 15h8"/><path d="M12 15v5.5"/><path d="M10 20.5h4"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="4.5"/><path d="M11.7 11.7 20.5 20.5"/><path d="M17.5 17.5 15.5 19.5"/><path d="M14.5 14.5 12.5 16.5"/></symbol>
+  <symbol id="i-crown-simple" viewBox="0 0 24 24"><path d="M3 8.5 7.5 11.5 12 5l4.5 6.5L21 8.5 19.5 19h-15L3 8.5Z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3c0 4.5 4.5 9 9 9-4.5 0-9 4.5-9 9 0-4.5-4.5-9-9-9 4.5 0 9-4.5 9-9Z"/></symbol>
+  <symbol id="i-diamond" viewBox="0 0 24 24"><path d="M6.5 3h11l3.5 6-9 12L3 9l3.5-6Z"/><path d="M3 9h18"/><path d="M9.5 3 7.5 9l4.5 12 4.5-12L14.5 3"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v5c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 11v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5h-4.2a2 2 0 0 0 0 4h2.4a2 2 0 0 1 0 4H9"/><path d="M12 6.5v11"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3c4 5 6.5 7.8 6.5 10.8a6.5 6.5 0 0 1-13 0C5.5 10.8 8 8 12 3Z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5 21 7v10l-9 4.5L3 17V7l9-4.5Z"/><path d="M3 7l9 4.5L21 7"/><path d="M12 11.5v10"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h9a3 3 0 1 0-3-3"/><path d="M3 12h13a3 3 0 1 1-3 3"/><path d="M3 16h7"/></symbol>
+  <symbol id="i-puzzle-piece" viewBox="0 0 24 24"><path d="M9 5V4a2 2 0 1 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 1 1 0 4h-1v3a1 1 0 0 1-1 1h-3v-1a2 2 0 1 0-4 0v1H6a1 1 0 0 1-1-1v-3H4a2 2 0 1 1 0-4h1V6a1 1 0 0 1 1-1Z"/></symbol>
+  <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 2.5c-4.7 0-8 3.4-8 7.8 0 2.6 1.2 4 2.5 5 .6.5.9 1 .9 1.9v1.3a1 1 0 0 0 1 1h7.2a1 1 0 0 0 1-1v-1.3c0-.9.3-1.4.9-1.9 1.3-1 2.5-2.4 2.5-5 0-4.4-3.3-7.8-8-7.8Z"/><circle cx="9" cy="11" r="1.7" fill="currentColor"/><circle cx="15" cy="11" r="1.7" fill="currentColor"/><path d="M10.8 16h2.4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5"/><path d="M12 7.6v.1"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z"/></symbol>
+  <symbol id="i-magnifying-glass" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.2 15.2 5.8 5.8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></symbol>
+</svg>
+
+<div class="app">
+
+  <header class="topbar">
+    <!-- Site chrome. Every link here is absolute on purpose: this file is meant
+         to be saved to disk and used with the network off, and a root relative
+         href would resolve against file:/// and go nowhere. -->
+    <div class="topbar__crumb">
+      <a class="topbar__mark" href="https://schillman.se/">schillman.se</a>
+      <span class="topbar__game">Diablo IV</span>
+    </div>
+    <div class="topbar__main">
+    <div>
+      <h1 class="topbar__title">Death Awakening<br><em>Farming Ledger</em></h1>
+      <p class="topbar__sub">Every farm objective from the season 14 guide, cross-checked against current patch notes, turned into a list you can actually clear.</p>
+    </div>
+    <div class="topbar__right">
+      <div class="progress">
+        <div class="progress__row">
+          <span class="progress__count"><span id="progress-done">0</span><small>/ <span id="progress-total">0</span> cleared</small></span>
+          <span class="progress__pct" id="progress-pct">0%</span>
+        </div>
+        <div class="progress__track"><div class="progress__fill" id="progress-fill"></div></div>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn" id="export-btn" type="button">Export</button>
+        <button class="btn" id="import-btn" type="button">Import</button>
+        <button class="btn btn--danger" id="reset-btn" type="button">Reset progress</button>
+      </div>
+    </div>
+    </div>
+    <nav class="sitenav" aria-label="Diablo IV section">
+      <a href="https://schillman.se/d4/">Overview</a>
+      <a href="https://schillman.se/d4/guides.html">Guides</a>
+      <a href="https://schillman.se/d4/ledger.html" aria-current="page">Ledger</a>
+      <a href="https://schillman.se/about.html">About</a>
+    </nav>
+  </header>
+
+  <div class="controls" id="controls">
+    <div class="controls__top">
+      <div class="search">
+        <svg class="icon search__icon" aria-hidden="true"><use href="#i-magnifying-glass"></use></svg>
+        <input type="search" id="search-input" placeholder="Search objectives (e.g. obols, resin, prisms)" aria-label="Search checklist objectives">
+      </div>
+      <div class="status-group" role="group" aria-label="Filter by status">
+        <button class="status-btn is-active" data-status="all" type="button" aria-pressed="true">All</button>
+        <button class="status-btn" data-status="remaining" type="button" aria-pressed="false">Remaining</button>
+        <button class="status-btn" data-status="done" type="button" aria-pressed="false">Done</button>
+      </div>
+      <button class="pri-toggle" id="priority-toggle" type="button" aria-pressed="false">
+        <svg class="icon" aria-hidden="true"><use href="#i-star"></use></svg>High Priority
+      </button>
+    </div>
+    <div class="chips" id="category-chips" role="group" aria-label="Filter by category"></div>
+  </div>
+
+  <main id="checklist-root" aria-live="polite"></main>
+
+  <div class="empty-state" id="empty-state">
+    <h3>Nothing matches those filters</h3>
+    <p>Try a broader search or clear a filter or two.</p>
+    <button id="clear-filters-btn" type="button">Clear all filters</button>
+  </div>
+
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="https://schillman.se/">Home</a>
+      <a href="https://schillman.se/d4/">Diablo IV</a>
+      <a href="https://schillman.se/d4/guides.html">Guides</a>
+      <a href="https://schillman.se/d4/ledger.html">Ledger</a>
+      <a href="https://schillman.se/about.html">About</a>
+      <a href="https://schillman.se/contact.html">Contact</a>
+      <a href="https://schillman.se/privacy.html">Privacy</a>
+      <a href="https://github.com/Schillman">GitHub</a>
+    </nav>
+    <p>Notes distilled from a Season 14 farming guide and checked against current Blizzard patch notes and War Plans data as of early Season of Death Awakening. Terminology and drop rates can still shift as the season gets patched, especially anything marked new this season.</p>
+    <p>Progress is stored only in this browser's local storage. Nothing is sent anywhere, and there is no account or sign in. Use Export before clearing your browser data, or to move progress to another device.</p>
+    <p>schillman.se is an independent fan site. Diablo IV is a trademark of Blizzard Entertainment, Inc. This site is not affiliated with, sponsored by or endorsed by Blizzard Entertainment.</p>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-overlay" id="desc-modal" hidden>
+  <div class="modal" id="desc-modal-card" role="dialog" aria-modal="true" aria-labelledby="desc-modal-title" tabindex="-1">
+    <header class="modal__header">
+      <div class="modal__heading">
+        <p class="modal__eyebrow" id="desc-modal-eyebrow"></p>
+        <h2 class="modal__title" id="desc-modal-title"></h2>
+      </div>
+      <button class="modal__close" id="desc-modal-close" type="button" aria-label="Close description">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+      </button>
+    </header>
+    <div class="modal__body" id="desc-modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ==============================================================
+   CHECKLIST DATA
+   Sourced from a Season 14 community farming guide (creator's own
+   testing, cited where anecdotal) and cross-checked against live
+   Season of Death Awakening patch notes / War Plans documentation.
+   rarity: only set on categories genuinely tied to that in-game
+   rarity tier (Aspects = legendary, Mythic Uniques = mythic).
+   ============================================================== */
+const DATA = [
+  {
+    id: "escalations",
+    name: "Nightmare Dungeon Escalations",
+    icon: "stack",
+    blurb: "The best all round endgame loop this season. Loot is weak on purpose at the start and ramps up hard as you climb tiers.",
+    items: [
+      { id:"esc-1", title:"Unlock Branching Pathways", tags:["priority"],
+        detail:"War Plan node in the Nightmare Dungeons tree. Adds 2 extra Horadric Portals each time you advance to the next floor of an Escalation, so you can chain further before a run ends." },
+      { id:"esc-2", title:"Push past Tier 1 before judging the loop",
+        detail:"Tier 1 numbers look weak on purpose. Gem fragments, Obols and Souls all scale up hard by Tier 2 and Tier 3, so don't stop early." },
+      { id:"esc-3", title:"Run Reserve-affix dungeons for the material you actually need",
+        detail:"Gem Reserve, Obol Reserve and Materials Reserve dungeons exist as their own affix. Target the one your build is short on instead of a generic run." },
+      { id:"esc-4", title:"Route toward a boss-spawn branch if you're chasing a specific Unique",
+        detail:"War Plan nodes let certain Lair Bosses appear inside Nightmare Dungeons too, so pick the branch whose loot table you actually want." }
+    ]
+  },
+  {
+    id: "aspects",
+    name: "Legendary Aspects",
+    icon: "sword",
+    rarity: "legendary",
+    blurb: "Early Torment progression is mostly about accepting thin gear and gambling toward a base kit.",
+    items: [
+      { id:"asp-1", title:"Gamble at the Purveyor of Curiosities with Obols", tags:["priority"],
+        detail:"Favor offensive slots (one-handers, off-hands) since the aspect extracts the same whether or not you actually wield the weapon." },
+      { id:"asp-2", title:"Upgrade a Rare to Legendary in the Horadric Cube",
+        detail:"Costs a Rare item plus Primordial Dust. The fastest way to fill an empty aspect slot while you're still low on Torment." },
+      { id:"asp-3", title:"Fish for high roll Ancestral aspects later", tags:["late-game"],
+        detail:"Feed spare Ancestral items into the same Cube recipe once most of your slots are already filled with low rolls." },
+      { id:"asp-4", title:"Treat Whisper and bounty caches as a bonus, not a plan",
+        detail:"They still drop the occasional legendary base, but they're too slow to build a farming route around." }
+    ]
+  },
+  {
+    id: "lair-keys",
+    name: "Lair Bosses and Lair Keys",
+    icon: "key",
+    blurb: "Helltide is the backbone of this whole system: keys, XP and boss access all come from the same loop.",
+    items: [
+      { id:"key-1", title:"Farm Helltide Hellwyrm and Maggot spawns", tags:["priority"],
+        detail:"Excellent XP and a steady key drip. For the Superior Lair Keys that open this season's Corrupted Reaper, though, the confirmed source is Deathtoll Chambers, reached through Pandemonium Ruptures and their Realmwalkers." },
+      { id:"key-2", title:"Keep the Hellmouth and Writhe and Rot War Plan nodes active",
+        detail:"Hellmouth makes Hellwyrms spawn something extra every time they surface, and Writhe and Rot forces that to be Maggots rather than Chaos Rifts or Bloodseekers. Maggots drop Experience Orbs, so this pair is the fastest levelling combination in the game." },
+      { id:"key-3", title:"Learn the Hellwyrm spawn points on your Helltide map",
+        detail:"Hellwyrms spawn in fixed locations per zone, so a known route beats wandering." },
+      { id:"key-4", title:"Don't plan around incidental keys",
+        detail:"Chests, seasonal caches and a couple of War Plan nodes drop a key here and there, but Helltide is doing almost all of the work." }
+    ]
+  },
+  {
+    id: "mythics",
+    name: "Mythic Uniques",
+    icon: "crown-simple",
+    rarity: "mythic",
+    blurb: "Mythic Uniques 3.0 changed the whole system: Mythic is now a quality any Unique can reach, not a separate fixed list.",
+    items: [
+      { id:"myt-1", title:"Craft an Iconic Mythic at the Blacksmith", tags:["priority"],
+        detail:"Costs 2 Resplendent Sparks for a random pull from the fixed original pool (Grandfather, Harlequin Crest, Ring of Starless Skies, Melted Heart of Selig, Tyrael's Might and the rest). Only this station produces those specific items." },
+      { id:"myt-2", title:"Craft a slot targeted Mythic at the Jeweler",
+        detail:"Costs runes plus 2 Sparks for a random standard Mythic in whichever slot you choose. Good for filling a gap the Iconic pool doesn't cover." },
+      { id:"myt-3", title:"Stockpile 4 Pandemonium Fragments per Cube attempt",
+        detail:"The Horadric Cube's Mythic upgrade turns a strong, high item power Unique you already own into a Mythic. Patch 3.1.1 cut the cost from 5 Fragments to 4. Bank a real buffer before committing rather than crafting the moment you cross the threshold." },
+      { id:"myt-4", title:"Farm the Corrupted Reaper with Superior Lair Keys", tags:["s14-new","priority"],
+        detail:"This season's Lair Boss, fought at The Pandemonium Threshold in Zarbinzet. Its Hoard carries the best Mythic and Fragment odds of any boss right now, and you open it with Superior Lair Keys in Torment 1 and above." },
+      { id:"myt-5", title:"Push the Nemesis Lair chain for the biggest single session swings",
+        detail:"War Plan chain: Two by Two into Greater Nemesis into Ultimate Nemesis. Each tier fights tougher bosses for a real shot at double or triple Mythic drops." }
+    ]
+  },
+  {
+    id: "charms",
+    name: "Charms, Seals and Resin",
+    icon: "sparkle",
+    blurb: "The Talisman system rewards picking almost everything up, at least until you know what you actually need.",
+    items: [
+      { id:"cha-1", title:"Farm Lair Bosses for Charms and Seals", tags:["priority"],
+        detail:"The Lair of Plenty War Plan node doubles your Hoard Chests per kill, which doubles this drip too." },
+      { id:"cha-2", title:"Salvage what you won't use at the Occultist for Resin",
+        detail:"Skip anything that already rolled a Greater Affix you'd actually run. Everything else is just Resin waiting to happen." },
+      { id:"cha-3", title:"Spend Resin on the Reroll Set Charm recipe",
+        detail:"Roughly a 4% chance per affix to land a Greater Affix on any given attempt. Slow, but it's the only reliable way to target one." },
+      { id:"cha-4", title:"Vendor duplicate Legendary Seals once your slots are covered",
+        detail:"They're worth real gold. You don't need a stash tab full of backups." }
+    ]
+  },
+  {
+    id: "gems",
+    name: "Gems and Horadric Crafting",
+    icon: "diamond",
+    blurb: "Cheap gems are everywhere. Flawless Horadric gems are where the real fragment cost shows up.",
+    items: [
+      { id:"gem-1", title:"Loop Chosen's Reach early for a starter gem set", tags:["early-game"],
+        detail:"A short, repeatable dungeon that reliably fills your defensive slots with Grand tier gems while your Torment is still low." },
+      { id:"gem-2", title:"Switch to Escalation and Gem Reserve dungeons once geared", tags:["late-game","priority"],
+        detail:"Fragment payouts here dwarf everything else. One creator reported over two million fragments of a single color from one deep Escalation run." },
+      { id:"gem-3", title:"Target the exact color your build needs",
+        detail:"A generic mixed Gem Reserve wastes fragments on conversion loss for colors you're not even using." },
+      { id:"gem-4", title:"Budget before starting a Flawless Royal Horadric gem",
+        detail:"It costs a genuinely large fragment stack plus a heavy Forgotten Souls tax. Don't start that project on a whim." }
+    ]
+  },
+  {
+    id: "gold",
+    name: "Gold",
+    icon: "coins",
+    blurb: "Gold income is rarely the problem this season. Unchecked spending usually is.",
+    items: [
+      { id:"gol-1", title:"Farm Lair Bosses and vendor spare Legendary Seals", tags:["priority"],
+        detail:"Each one sells for a genuinely large pile of gold, and you'll out produce your own stash space fast." },
+      { id:"gol-2", title:"Prioritize the Golden Hoard War Plan node",
+        detail:"Converts an entire Hoard Chest's non unique loot straight into gold on every kill, no extra steps needed." },
+      { id:"gol-3", title:"Audit your spending, not just your income",
+        detail:"Enchanting and rerolling gear you'll probably replace next week is where gold actually disappears, not the farming side." }
+    ]
+  },
+  {
+    id: "obols",
+    name: "Obols",
+    icon: "coin",
+    blurb: "Still one of the best ways to gamble your way to a full aspect kit and crafting bases.",
+    items: [
+      { id:"obo-1", title:"Farm Obol Reserve Escalations for big batches", tags:["priority"],
+        detail:"The cap sits at 25,000 this season, so there's real room to stockpile before a dedicated gambling session." },
+      { id:"obo-2", title:"Watch for Obol dropping Goblins in the open world",
+        detail:"A nice bonus on top of your regular route. Not worth a long detour on its own." },
+      { id:"obo-3", title:"Spend in deliberate sessions, not a handful at a time",
+        detail:"Bigger batches make it easier to actually notice your own gambling patterns and adjust." }
+    ]
+  },
+  {
+    id: "souls",
+    name: "Forgotten Souls",
+    icon: "drop",
+    blurb: "You need thousands of these for Flawless Horadric crafting alone, so the drip needs to stay constant.",
+    items: [
+      { id:"sou-1", title:"Auto salvage non essential Ancestrals and Uniques", tags:["priority"],
+        detail:"Set your loot filter to salvage on pickup and stop checking stats on every single one. Volume matters more than any one roll." },
+      { id:"sou-2", title:"Farm Materials Reserve Escalations",
+        detail:"One of the best flat Soul sources in the game right now, and it hands out crafting dust from the same pool." },
+      { id:"sou-3", title:"Convert a Veiled Crystal surplus into Souls",
+        detail:"Veiled Crystals become Baleful Fragments, which become Forgotten Souls at a 10 to 1 rate. Useful if Whispers have left you sitting on a pile." }
+    ]
+  },
+  {
+    id: "prisms",
+    name: "Tuning Prisms",
+    icon: "cube",
+    blurb: "Mostly an early game bottleneck, right when your first Ancestrals start dropping.",
+    items: [
+      { id:"pri-1", title:"Farm bosses, World Bosses and Goblins early", tags:["early-game"],
+        detail:"The Glittering Goblin in particular is worth chasing down if you spot one on the map." },
+      { id:"pri-2", title:"Spend with intent", tags:["nerfed"],
+        detail:"Drop rates were reduced this patch, so these are scarcer than they used to be. Don't burn them on a whim reroll." },
+      { id:"pri-3", title:"Save a stock for Transfiguration", tags:["late-game"],
+        detail:"Worth keeping a reserve if you're planning to chase a specific outcome on a min maxed item later in the season." }
+    ]
+  },
+  {
+    id: "dust",
+    name: "Primordial Dust",
+    icon: "wind",
+    blurb: "Refined and Enhanced Dust keep your crafting moving. Attuned Dust is the one that actually runs out.",
+    items: [
+      { id:"dus-1", title:"Farm Materials Reserve Escalations for Refined and Enhanced Dust",
+        detail:"Drops from the same pool as your Forgotten Souls, so this is already covered if you're running that farm." },
+      { id:"dus-2", title:"Grab the Fearless Conviction War Plan node early", tags:["priority"],
+        detail:"Only 3 points into the Nightmare Dungeons tree. Its end of dungeon Conviction Chest is the closest thing to a dedicated, guaranteed Attuned Dust source." },
+      { id:"dus-3", title:"Kill Elites on the way through, don't skip them",
+        detail:"Conviction stacks build from Elite and Champion kills and drop if you get hit, so a clean clear pays out more Attuned Dust at the chest." },
+      { id:"dus-4", title:"Spend Attuned Dust only on pieces you're keeping",
+        detail:"It perfect rolls a Temper affix or maxes a Charm's inherent value, and it disappears fast once you start spending it." }
+    ]
+  },
+  {
+    id: "runes",
+    name: "Runes",
+    icon: "puzzle-piece",
+    blurb: "Kurast Undercity is built around these. Everything else is a side bonus.",
+    items: [
+      { id:"run-1", title:"Run Undercity Tributes", tags:["priority"],
+        detail:"Still the single best overall rune source, and it stacks with your regular Torment progression." },
+      { id:"run-2", title:"Keep the Lair of Runes War Plan node active",
+        detail:"Gives Lair Bosses a bonus, if inconsistent, chance at specific Legendary Runes on top of their normal loot." },
+      { id:"run-3", title:"Know that Echoing Hatred is a horde mode, not a rune farm",
+        detail:"Despite sitting near the rune farms, Echoing Hatred is a Lord of Hatred horde survival mode: waves of tougher enemies until you are Overwhelmed. You enter it by finding a rare Trace of Echoes and using the Sightless Eye in Temis, not through a Kurast Undercity Tribute. Run it for its own rewards, not for runes." },
+      { id:"run-4", title:"Use Amalgamation to convert what you don't need",
+        detail:"Turns spare copies of runes you're not using into ones you actually want for a specific Mythic or Runeword." }
+    ]
+  },
+  {
+    id: "pandemonium",
+    name: "Pandemonium Fragments",
+    icon: "skull",
+    blurb: "This season's dedicated Mythic crafting currency, tied directly to the new seasonal boss.",
+    items: [
+      { id:"pan-1", title:"Farm the Corrupted Reaper with Superior Lair Keys", tags:["priority","s14-new"],
+        detail:"The Hoard is the most reliable Pandemonium Fragment source in the game right now, opened with Superior Lair Keys in Torment 1 and above." },
+      { id:"pan-2", title:"Bank Glints of Hope on the Zarbinzet reputation board",
+        detail:"Since patch 3.1.1 the repeatable Glints of Hope reward guarantees a Pandemonium Fragment rather than rolling for one, so this is a second reliable Fragment income stream and no longer just a bonus track." },
+      { id:"pan-3", title:"Budget 4 Fragments per Cube attempt",
+        detail:"Stockpile a real buffer before committing rather than crafting the instant you cross the threshold, since the outcome is still partly random." }
+    ]
+  }
+];
+
+/* ==============================================================
+   ITEM DESCRIPTIONS
+   Long-form, source-verified explanations shown in the description
+   card. Keyed by item id so the DATA array above stays untouched.
+   Written against live Season 14 sources (Blizzard season page and
+   Patch 3.1.0 notes, Maxroll, Icy Veins, Fextralife); where a source
+   could NOT confirm a mechanic the copy says so rather than guessing.
+   <strong> is used for key terms and numbers only.
+   ============================================================== */
+const DESCRIPTIONS = {
+  "esc-1": [
+    "<strong>Branching Pathways</strong> lives in the Nightmare Dungeons branch of the <strong>War Plans</strong> tree, the endgame progression system that shipped with the Lord of Hatred expansion. With it active, each time you advance to the next dungeon in a Nightmare Escalation, <strong>2 additional Horadric Portals</strong> spawn.",
+    "More portals means more ways to keep chaining deeper before a run ends, and depth is where Escalation loot actually pays out. Grab this early if you plan to live in the Escalation loop, since it compounds with every floor you clear.",
+    "Confirmed against Maxroll and the Fextralife War Plans page for Season 14."
+  ],
+  "esc-2": [
+    "Escalation rewards are back loaded on purpose. The first floors hand out deliberately thin loot so the deeper tiers feel like a real jump, and the currencies you care about (gem fragments, Obols, crafting materials) scale with how far you push, not with how many quick low tier runs you grind.",
+    "Practical takeaway: judge the loop by a deep run, not by floor one. If Tier 1 feels underwhelming, that is the design working as intended, so keep climbing.",
+    "This is general Escalation strategy rather than a single cited figure. The exact per tier scaling is not published and drifts with hotfixes."
+  ],
+  "esc-3": [
+    "Nightmare Dungeons can roll a <strong>Reserve</strong> affix that stuffs the run with one material. In Season 14 these carry a Horadric prefix: <strong>Horadric Gem Reserve</strong>, <strong>Gold Reserve</strong>, <strong>Obols Reserve</strong> and <strong>Materials Reserve</strong>, plus gem specific reserves for each color (Amethyst, Diamond, Emerald, Ruby, Sapphire, Skull, Topaz).",
+    "Every Reserve affix spawns <strong>8 Horadric Chests</strong> of the named loot type across the dungeon, so a targeted Reserve run is far denser for one resource than a generic clear. Pick the Reserve that matches whatever your build is short on.",
+    "Confirmed against Maxroll's Nightmare Dungeons resource (updated for Season 14)."
+  ],
+  "esc-4": [
+    "The Lair Bosses branch of the War Plans tree steers which boss encounters you get, including the <strong>Nemesis chain</strong> (Two by Two, Greater Nemesis, Ultimate Nemesis) that escalates into tougher fights for fatter Hoards.",
+    "If you are chasing a specific Unique, follow the War Plans branch whose loot table you actually want rather than running generic dungeons and hoping.",
+    "The War Plans branching and Nemesis nodes are confirmed. The precise mapping of individual Lair Bosses into Nightmare Dungeon runs is build and node dependent and not pinned down in current guides."
+  ],
+  "asp-1": [
+    "The <strong>Purveyor of Curiosities</strong> sells random gear for <strong>Murmuring Obols</strong>, and you extract the Legendary Aspect off whatever drops at the Occultist. Because extraction pulls the aspect regardless of the item's stats, you are really gambling for aspects, not for usable weapons.",
+    "Favor offensive slots such as one handed weapons and off hands: the aspect extracts the same either way, and those slots tend to be the cheaper Obol spend for the aspects you want.",
+    "Gambling at the Purveyor with Obols is a long standing Diablo IV mechanic. The research pass did not surface a Season 14 specific confirmation of exact Obol costs, so treat slot pricing as the usual base game behavior."
+  ],
+  "asp-2": [
+    "<strong>Primordial Dust</strong> is a Lord of Hatred era crafting material (Attuned Primordial Dust is a confirmed reward from War Plans Conviction Chests). The idea here is to spend it in the <strong>Horadric Cube</strong> to turn a Rare into a Legendary and fill an empty aspect slot fast while your Torment is still low.",
+    "That makes it the quickest early plug for a missing aspect.",
+    "Flag: the specific Rare to Legendary Horadric Cube recipe that consumes Primordial Dust was not confirmed against current Season 14 sources during research. Primordial Dust itself is real, but treat this exact recipe as provisional until you see it in game."
+  ],
+  "asp-3": [
+    "Once most slots hold at least a low roll aspect, switch to improving rolls rather than filling gaps. Feed spare Ancestral items into the same Cube workflow to fish for higher aspect values on the slots that matter most to your build.",
+    "This is a late game optimization step. Do not burn materials on it while you still have empty slots to cover.",
+    "General progression strategy. Aspect roll ranges are base game itemization, not a Season 14 specific claim."
+  ],
+  "asp-4": [
+    "Grim Favor caches from the Tree of Whispers and similar reward caches still cough up the occasional Legendary base, so it is worth opening them for aspects as a passive bonus.",
+    "They are too slow and too random to be the backbone of an aspect farming route, though. Treat them as gravy on top of Purveyor gambling and Cube crafting, not a plan.",
+    "Strategy note rather than a cited drop rate."
+  ],
+  "key-1": [
+    "This category covers Lair Keys broadly. For the season's marquee keys, the <strong>Superior Lair Keys</strong> that open the Corrupted Reaper's Hoard, current guides point at <strong>Deathtoll Chambers</strong> as the best source. You reach those by closing <strong>Pandemonium Ruptures</strong> and defeating the <strong>Realmwalker</strong> they spawn, or via Rupture affix Nightmare Dungeons.",
+    "Helltide is still a strong general loop for keys, materials and XP, so it is worth running. Just know that for the seasonal boss specifically, the confirmed key pipeline runs through Deathtoll Chambers, not the Helltide Hellwyrm."
+  ],
+  "key-2": [
+    "The intent here is to use War Plans nodes to make Helltide spawn what you want on demand instead of leaving it to chance.",
+    "Keep your active War Plans board tuned toward the activity you are farming, and sync boards with a party using <strong>Marks of El'Druin</strong> (2 marks per sync) so everyone benefits from the same bonuses.",
+    "Node names confirmed against current War Plans documentation: <strong>Hellmouth</strong>, <strong>Writhe and Rot</strong>, Branching Pathways, Fearless Conviction, Nemesis, Lair of Runes, Lair of Plenty, Golden Hoard and Tree of Plenty. Note the spelling of Writhe and Rot, which is often miscopied as Wither."
+  ],
+  "key-3": [
+    "Hellwyrms appear at fixed points per Helltide zone, so a memorized route beats wandering the map hoping to stumble onto one.",
+    "Learn two or three zones well and you can move straight from spawn to spawn on each Helltide rotation.",
+    "Fixed spawn locations are base game Helltide behavior. Exact positions are best pulled from a live interactive map, since they rarely change but are easy to look up."
+  ],
+  "key-4": [
+    "Chests, seasonal caches and the odd War Plans node will hand you a key here and there, but incidental drops are noise next to a dedicated farm.",
+    "Build your route around the reliable source (Deathtoll Chambers for Superior Lair Keys) and treat everything else as a small bonus.",
+    "Strategy note."
+  ],
+  "myt-1": [
+    "Crafting a guaranteed Mythic at the <strong>Blacksmith</strong> for <strong>2 Resplendent Sparks</strong> is the classic Diablo IV path for a random pull from the fixed original pool (Grandfather, Harlequin Crest, Ring of Starless Skies, Melted Heart of Selig, Tyrael's Might and the rest).",
+    "Sparks come from salvaging Mythics and from various endgame rewards, so this is the slow but certain route when RNG will not hand you the one you want. Current cost is <strong>2 Resplendent Sparks plus 50,000,000 gold</strong>.",
+    "Confirmed as a live Season 14 path: the 3.1.1 patch notes add El'Druin, Sword of Justice to the Blacksmith's Mythic Unique Cache pool. Note that a crafted Mythic carries a <strong>Crafted</strong> tag, and you can only equip one crafted Mythic at a time."
+  ],
+  "myt-2": [
+    "A slot targeted Mythic: <strong>3 Resplendent Sparks</strong>, nine specific runes in three sets of three, and <strong>5,000,000 gold</strong> pulls a random standard Mythic in the slot whose recipe you used. It cannot produce Iconic Mythics.",
+    "Flag: sources disagree on which vendor hosts this recipe and which hosts the Iconic cache. The costs are consistent across sources, only the counter is disputed, so check both the Jeweler and the Blacksmith rather than trusting either arrangement."
+  ],
+  "myt-3": [
+    "The seasonal Mythic path is the <strong>Horadric Cube</strong> conversion: it upgrades a strong Unique you already own into a random Mythic from that slot's category. Cost is <strong>4 Pandemonium Fragments</strong> since patch 3.1.1 cut it from 5, plus a donor Unique at item level 850 or above. The result is always Ancestral with its <strong>Unique Powers increased by 30%</strong> and every other affix at maximum.",
+    "Bank a real buffer of Fragments and a genuinely good donor Unique before committing, rather than converting the instant you cross 4, so you are upgrading something worth keeping.",
+    "Cost confirmed against the 3.1.1 patch notes. The 850 item power figure is from Maxroll and can move with hotfixes."
+  ],
+  "myt-4": [
+    "The <strong>Corrupted Reaper</strong> is Season 14's new seasonal Lair Boss, fought at <strong>The Pandemonium Threshold</strong> in <strong>Zarbinzet</strong> (Hawezar). Its Hoard has the best confirmed direct drop chances for both Mythic Uniques and Pandemonium Fragments of any activity this season, and it also rolls from the General Unique Pool.",
+    "You open its Hoard with <strong>Superior Lair Keys</strong> at <strong>Torment 1 and above</strong>. Farm those keys from Deathtoll Chambers (via Pandemonium Ruptures and Realmwalkers), then cash them in here."
+  ],
+  "myt-5": [
+    "The War Plans <strong>Nemesis chain</strong> escalates Lair Boss difficulty and rewards: <strong>Two by Two</strong> (two Initiate bosses) into <strong>Greater Nemesis</strong> (two Greater bosses) into <strong>Ultimate Nemesis</strong>. Ultimate Nemesis opens via an altar that consumes <strong>5 Betrayer's Husks</strong>, gives all enemies +5 Monster Power, and awards <strong>10 Hoard Chests worth of items</strong> on the kill.",
+    "Each tier trades higher difficulty for a real shot at multiple Mythic drops in one session, so this is your big swing play once your build can handle the extra Monster Power.",
+    "Confirmed against Fextralife and Maxroll War Plans documentation. Monster Power and Hoard Chest numbers are as reported there and may be tuned."
+  ],
+  "cha-1": [
+    "Charms and Seals feed the <strong>Talisman</strong>, the Lord of Hatred socket board (one central Seal slot plus an outer ring of Charm slots). The Seal you slot determines how many Charm slots you get, scaling by rarity up to a Mythic Unique Seal.",
+    "Lair Boss <strong>Hoard Chests</strong> are a dependable drip of both. The <strong>Lair of Plenty</strong> War Plans node grants +1 Hoard Chest per Lair Boss kill (bosses gain +1 Monster Power), which directly doubles this income.",
+    "Talisman, Charms, Seals and Lair of Plenty are confirmed (Maxroll, Fextralife). Mythic Unique Seals reportedly only drop in the highest Torment tiers."
+  ],
+  "cha-2": [
+    "Salvage the Charms and Seals you will not use at the <strong>Occultist</strong>. They break down into <strong>Infused Horadric Resin</strong>, the material the Reroll Set Charm recipe runs on.",
+    "Skip anything that already rolled a Greater Affix you would actually run. Everything else is just Resin waiting to happen.",
+    "Confirmed against Maxroll's talisman resource."
+  ],
+  "cha-3": [
+    "The <strong>Reroll Set Charm</strong> recipe transmutes a Set Charm into a different Charm from the same set, and each affix has a chance to come out as a <strong>Greater Affix</strong> at roughly <strong>4% per affix</strong>.",
+    "It is slow, but it is the only reliable way to target a Greater Affix on a Set Charm, so budget Resin for repeated attempts rather than expecting a hit early.",
+    "Confirmed against Maxroll. The ~4% figure is a community estimate (the source itself hedges it), not an officially published number."
+  ],
+  "cha-4": [
+    "Once your Talisman slots are covered, spare Legendary Seals are just gold. Vendor the duplicates instead of hoarding a stash tab of backups.",
+    "Legendary Seals are described as the bread and butter tier for most of the endgame, so you will accumulate far more than you can slot.",
+    "Seal rarity tiers are confirmed. The exact vendor value is standard gold scaling by rarity."
+  ],
+  "gem-1": [
+    "The plan is a short, repeatable dungeon you can run early to fill your defensive gem slots with Grand tier gems while your Torment is still low.",
+    "Cheap gems are everywhere at this stage, so the goal is just to stop running empty sockets, not to chase perfection.",
+    "Flag: <strong>Chosen's Reach</strong> as a Season 14 gem farm was not confirmed in the research pass. The general early gem loop advice holds, but the specific dungeon name should be treated as provisional."
+  ],
+  "gem-2": [
+    "Once geared, the biggest gem fragment payouts come from deep <strong>Escalations</strong> and <strong>Horadric Gem Reserve</strong> Nightmare Dungeons, where a Gem Reserve affix spawns 8 Horadric Chests of gem fragments per run.",
+    "This dwarfs early gem farming. Community reports of enormous single color fragment hauls from one deep run are anecdotal but point the right direction.",
+    "Reserve affixes and their 8 chest payout are confirmed (Maxroll). The specific multi million fragment figure is an unverified community anecdote."
+  ],
+  "gem-3": [
+    "Run the color specific Gem Reserve (Amethyst, Diamond, Emerald, Ruby, Sapphire, Skull or Topaz) that matches your build instead of a generic mixed reserve.",
+    "Converting the wrong color into the one you need bleeds fragments to conversion loss, so targeting the right reserve up front is pure efficiency.",
+    "Gem specific reserves are confirmed (Maxroll). Conversion loss is standard gem crafting behavior."
+  ],
+  "gem-4": [
+    "A top tier <strong>Flawless Royal</strong> Horadric gem is a genuine project: it eats a large fragment stack plus a heavy <strong>Forgotten Souls</strong> tax on top.",
+    "Do not start one on a whim. Confirm you have both the fragments and the Souls to finish before you commit, or you will strand a half funded craft.",
+    "Flag: the exact Flawless Royal fragment and Forgotten Souls costs were not confirmed in the research pass. Budget conservatively and check current numbers before starting."
+  ],
+  "gol-1": [
+    "Lair Bosses feed two gold streams at once: the loot itself, and the spare Legendary Seals you vendor once your Talisman is set. Each spare Seal sells for a meaningful pile.",
+    "You will out produce your own stash space quickly, so sell as you go.",
+    "Consistent with the confirmed Seal and Lair Boss systems. Exact gold values are standard."
+  ],
+  "gol-2": [
+    "The <strong>Golden Hoard</strong> War Plans node converts all equipment that would drop from Hoard Chests straight into <strong>gold</strong>, except Unique and Mythic items, on every Lair Boss kill.",
+    "That turns your boss farm into a passive gold engine with no extra steps, so it is an easy priority if gold is ever tight.",
+    "Confirmed against Fextralife War Plans documentation."
+  ],
+  "gol-3": [
+    "Gold income is rarely the bottleneck this season. Enchanting and rerolling gear you will replace next week is where it actually disappears.",
+    "Before assuming you need more income, look at the sink: hold off on rerolling temporary gear and the shortage usually solves itself.",
+    "General economy note. The gold cap was raised massively this patch (reported to 999,999,999,999 in the Patch 3.1.0 notes), so storage is not the constraint, discipline is."
+  ],
+  "obo-1": [
+    "<strong>Obols Reserve</strong> Nightmare Dungeons spawn 8 Horadric Chests of Obols, letting you bank big batches for a dedicated gambling session. The <strong>Obol cap was raised to 25,000</strong> this season (up from 2,500 per the Patch 3.1.0 notes), so there is real room to stockpile.",
+    "Fill toward the cap, then spend it all at the Purveyor in one focused run rather than trickling it out.",
+    "Obols Reserve affix confirmed (Maxroll). The 25,000 cap comes from the official Patch 3.1.0 notes, so treat it as current but patch sensitive."
+  ],
+  "obo-2": [
+    "Obol dropping Goblins in the open world are a nice top up on whatever route you are already running.",
+    "They are not worth a long detour on their own, so grab them when they cross your path and move on.",
+    "General open world behavior."
+  ],
+  "obo-3": [
+    "Gamble in big deliberate batches rather than a handful of Obols at a time. Larger sessions make your own patterns (which slots you keep dumping into) obvious, so you can adjust.",
+    "With the cap at 25,000 you can build a serious war chest before a session, which also smooths out the variance.",
+    "Strategy note. Cap figure per the Patch 3.1.0 notes."
+  ],
+  "sou-1": [
+    "<strong>Forgotten Souls</strong> come from salvaging, and Flawless Horadric crafting needs them by the thousand, so volume beats scrutiny. Set your loot filter to salvage on pickup and stop reading stats on every drop.",
+    "The steady drip from mass salvage matters far more than any single roll you might be tempted to keep.",
+    "General crafting economy. The thousands scale for Flawless crafting is directional. Exact recipe costs were not confirmed in research."
+  ],
+  "sou-2": [
+    "<strong>Materials Reserve</strong> Nightmare Dungeons spawn 8 Horadric Chests of crafting materials, one of the best flat sources of Forgotten Souls, and they hand out crafting dust from the same pool.",
+    "If you are already running Materials Reserve for dust, your Soul income is covered at the same time.",
+    "Materials Reserve affix and its 8 chest payout are confirmed (Maxroll). The exact material mix per chest is not itemized in sources."
+  ],
+  "sou-3": [
+    "The idea is to funnel a Veiled Crystal surplus down into Forgotten Souls: Veiled Crystals into Baleful Fragments, then Baleful Fragments into Forgotten Souls at a stated 10 to 1 rate. Useful if Whispers have left you sitting on a crystal pile.",
+    "Flag: this specific Veiled Crystal to Baleful Fragments to Forgotten Souls conversion chain and the 10 to 1 rate were not confirmed against current Season 14 sources during research. Verify the recipe at your crafting stations before relying on it."
+  ],
+  "pri-1": [
+    "<strong>Tuning Prisms</strong> gate rerolling the affixes on your first Ancestral gear, so the crunch hits right when those items start dropping. Bosses, World Bosses and Goblins are the go to early sources.",
+    "The Glittering Goblin especially is worth chasing down if you spot one.",
+    "Prisms as an Ancestral reroll material is base game behavior, and the early sources are standard."
+  ],
+  "pri-2": [
+    "The item is tagged as nerfed because Prism drop rates were reportedly reduced, making them scarcer than before. Do not burn one on a whim reroll of gear you will replace.",
+    "Flag: a Season 14 specific Tuning Prism drop rate nerf was not confirmed in the research pass. Treat prisms as scarce regardless and spend them deliberately, but the nerf itself is unverified."
+  ],
+  "pri-3": [
+    "Keep a reserve of Prisms if you plan to chase a specific outcome on a min maxed item later in the season, so you are not stuck farming them at the worst time.",
+    "Late game optimization note. Holding a buffer is sound regardless of the exact reroll mechanic's name."
+  ],
+  "dus-1": [
+    "Refined and Enhanced <strong>Primordial Dust</strong> drop from the same Materials Reserve pool as your Forgotten Souls, so if you are running that farm this is already handled.",
+    "No separate route is needed for the common dust tiers, they ride along with your Soul farming.",
+    "Flag: Materials Reserve is confirmed, but the specific Primordial Dust tier names (Refined, Enhanced) were not individually confirmed in research. Attuned Primordial Dust is the tier confirmed, via War Plans Conviction Chests."
+  ],
+  "dus-2": [
+    "<strong>Fearless Conviction</strong> sits only 3 points into the Nightmare Dungeons War Plans branch, and its end of dungeon <strong>Conviction Chest</strong> is the closest thing to a dedicated <strong>Attuned Primordial Dust</strong> source.",
+    "Cheap to reach and high value, so grab it early if Attuned Dust is your bottleneck.",
+    "Fearless Conviction and the Conviction Chest are confirmed (Fextralife), including a higher chance at Attuned Primordial Dust. The exact 3 point cost is as reported."
+  ],
+  "dus-3": [
+    "Conviction stacks build from killing <strong>Elites and Champions</strong>, and getting hit strips a stack, so a clean, aggressive clear pays out more at the Conviction Chest than a cautious skip past packs.",
+    "Kill everything on the way through and avoid taking hits to keep stacks high.",
+    "Confirmed against Fextralife (stacks from Elites and Champions, lost on being hit)."
+  ],
+  "dus-4": [
+    "<strong>Attuned</strong> Dust is the tier that actually runs dry. It perfect rolls a Temper affix or maxes a Charm's inherent value, and it drains fast once you start spending.",
+    "Only spend it on pieces you are confident you are keeping. Do not perfect roll gear headed for the salvage bin.",
+    "Attuned Primordial Dust is confirmed as the scarce tier (via Conviction Chests). Its spend effects follow standard tempering and charm behavior."
+  ],
+  "run-1": [
+    "The pitch is that <strong>Kurast Undercity</strong> Tribute runs are the single best overall rune source, stacking on top of your normal Torment progression.",
+    "Flag: the research pass did not confirm Kurast Undercity Tributes as the Season 14 rune source, nor the rune systems generally. Runewords do exist in Season 14 (Maxroll has a dedicated guide), but the Undercity as the rune farm should be treated as provisional. Verify against a current runes guide."
+  ],
+  "run-2": [
+    "The intent is a War Plans node that gives Lair Bosses a bonus, if inconsistent, chance at specific Legendary Runes on top of their normal loot.",
+    "Flag: a <strong>Lair of Runes</strong> node was not confirmed in current War Plans documentation. Several other War Plans nodes are confirmed, so this one is plausible but unverified, check your own board."
+  ],
+  "run-3": [
+    "<strong>Echoing Hatred</strong> is a Lord of Hatred <strong>horde survival mode</strong> where waves of steadily harder monsters attack until you are Overwhelmed. You enter it by finding a rare <strong>Trace of Echoes</strong> drop and using the Sightless Eye in Temis.",
+    "It is not a Kurast Undercity Tribute upgrade or a rune farm, so chase it for its own rewards rather than for runes.",
+    "Confirmed against Maxroll and Fextralife."
+  ],
+  "run-4": [
+    "The idea is a Rune Amalgamation recipe that turns spare copies of runes you are not using into ones you actually need for a specific Mythic or Runeword.",
+    "Flag: Rune Amalgamation was not confirmed against current Season 14 sources in the research pass. Runewords are confirmed to exist this season, but verify the conversion recipe in game before planning around it."
+  ],
+  "pan-1": [
+    "<strong>Pandemonium Fragments</strong> are Season 14's dedicated Mythic crafting currency, and the <strong>Corrupted Reaper</strong> (at The Pandemonium Threshold in Zarbinzet) is the best confirmed source. You open its Hoard with <strong>Superior Lair Keys</strong> at Torment 1 and above.",
+    "Farm Superior Lair Keys from Deathtoll Chambers via Pandemonium Ruptures and Realmwalkers, then spend them on Reaper Hoards for the Fragments (and a strong shot at Mythic Uniques too).",
+    "Since patch 3.1.1 the Reaper drops up to two Fragments per kill, scaling with your Torment tier, so the difficulty you can hold is a direct multiplier on your Mythic rate."
+  ],
+  "pan-2": [
+    "Closing <strong>Pandemonium Ruptures</strong> earns <strong>Glints of Hope</strong>, which you redeem at the <strong>reputation board in Zarbinzet</strong>. Maxroll frames this as a 24 rank reputation track that pays out caches, Masterwork materials and Pandemonium Fragments, so it is a genuine secondary Fragment source, not just flavor.",
+    "Work the track alongside your Reaper runs, since the reputation rewards accrue as you close Ruptures anyway.",
+    "Since patch 3.1.1 the repeatable Glints of Hope reward <strong>guarantees</strong> a Pandemonium Fragment rather than rolling for one, which is what turned this from an unreliable bonus track into a second Fragment income stream."
+  ],
+  "pan-3": [
+    "Each Horadric Cube Mythic conversion costs <strong>4 Pandemonium Fragments</strong> plus a high item power Unique, and the outcome is partly random, so stockpile a buffer rather than converting the instant you hit 4.",
+    "A buffer lets you take a few swings at a good donor Unique instead of being forced to spend on the first one. Two clean Corrupted Reaper kills plus a repeatable reputation reward is roughly one attempt.",
+    "Cost confirmed against the 3.1.1 patch notes, which reduced it from 5 Fragments to 4."
+  ]
+};
+</script>
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "d4s14-farming-ledger.v1";
+  var TAG_LABELS = {
+    "priority":"Priority",
+    "s14-new":"New S14",
+    "nerfed":"Nerfed",
+    "early-game":"Early game",
+    "late-game":"Late game"
+  };
+
+  var state = loadState();
+  var filters = { status:"all", search:"", priorityOnly:false, categories:new Set(DATA.map(function(c){return c.id;})) };
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* storage unavailable, fail silently */ }
+  }
+
+  function allItems(){
+    var out = [];
+    DATA.forEach(function(cat){ cat.items.forEach(function(it){ out.push(it); }); });
+    return out;
+  }
+
+  function buildTagsHTML(tags){
+    if(!tags || !tags.length) return "";
+    return tags.map(function(t){
+      return '<span class="tag tag--'+t+'">'+ (TAG_LABELS[t]||t) +'</span>';
+    }).join("");
+  }
+
+  function buildItemHTML(item){
+    var checked = state[item.id] ? "checked" : "";
+    var doneClass = state[item.id] ? " is-done" : "";
+    var pri = (item.tags && item.tags.indexOf("priority") !== -1) ? ' data-priority="1"' : '';
+    return (
+      '<li class="item'+doneClass+'" data-id="'+item.id+'"'+pri+'>'+
+        '<label class="item__label">'+
+          '<input type="checkbox" class="item__check-input" data-id="'+item.id+'" '+checked+'>'+
+          '<span class="item__box" aria-hidden="true"><svg class="item__check-icon" viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+
+          '<span class="item__body">'+
+            '<span class="item__title">'+item.title + buildTagsHTML(item.tags) +'</span>'+
+            '<span class="item__detail">'+item.detail+'</span>'+
+          '</span>'+
+          '<button type="button" class="item__info-btn" data-desc="'+item.id+'" aria-label="Read more">'+
+            '<svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg>'+
+          '</button>'+
+        '</label>'+
+      '</li>'
+    );
+  }
+
+  function buildCategoryHTML(cat){
+    var rarityClass = cat.rarity ? " category--"+cat.rarity : "";
+    var itemsHTML = cat.items.map(buildItemHTML).join("");
+    return (
+      '<section class="category'+rarityClass+'" data-id="'+cat.id+'">'+
+        '<header class="category__header">'+
+          '<span class="category__icon"><svg class="icon" aria-hidden="true"><use href="#i-'+cat.icon+'"></use></svg></span>'+
+          '<div class="category__heading">'+
+            '<h2 class="category__title">'+cat.name+'</h2>'+
+            '<p class="category__blurb">'+cat.blurb+'</p>'+
+          '</div>'+
+          '<span class="category__count" data-count-for="'+cat.id+'">0 / '+cat.items.length+'</span>'+
+        '</header>'+
+        '<ul class="item-list">'+itemsHTML+'</ul>'+
+      '</section>'
+    );
+  }
+
+  function buildChipsHTML(){
+    return DATA.map(function(cat){
+      return '<button type="button" class="chip is-active" data-cat="'+cat.id+'" aria-pressed="true">'+
+        '<svg class="icon" aria-hidden="true"><use href="#i-'+cat.icon+'"></use></svg>'+cat.name+'</button>';
+    }).join("");
+  }
+
+  var root = document.getElementById("checklist-root");
+  var chipsRoot = document.getElementById("category-chips");
+  var emptyState = document.getElementById("empty-state");
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+
+  var appEl = document.querySelector(".app");
+  var modalOverlay = document.getElementById("desc-modal");
+  var modalCard = document.getElementById("desc-modal-card");
+  var modalEyebrow = document.getElementById("desc-modal-eyebrow");
+  var modalTitle = document.getElementById("desc-modal-title");
+  var modalBody = document.getElementById("desc-modal-body");
+  var modalClose = document.getElementById("desc-modal-close");
+  var lastFocused = null;
+  var modalCloseTimer = null;
+
+  var itemIndex = {};
+  DATA.forEach(function(cat){
+    cat.items.forEach(function(it){
+      itemIndex[it.id] = { item:it, category:cat.name, rarity:cat.rarity || null };
+    });
+  });
+
+  function init(){
+    root.innerHTML = DATA.map(buildCategoryHTML).join("");
+    chipsRoot.innerHTML = buildChipsHTML();
+    // precompute lowercase search text per item via the DOM, avoids any HTML escaping concerns
+    DATA.forEach(function(cat){
+      cat.items.forEach(function(item){
+        var el = root.querySelector('.item[data-id="'+item.id+'"]');
+        if(!el) return;
+        el.dataset.search = (item.title+" "+item.detail).toLowerCase();
+        var infoBtn = el.querySelector(".item__info-btn");
+        if(infoBtn) infoBtn.setAttribute("aria-label", "Read more about "+item.title);
+      });
+    });
+    updateCounts();
+    applyFilters();
+    bindEvents();
+    importFromFragment();
+  }
+
+  function updateCounts(){
+    var totalDone = 0, totalAll = 0;
+    DATA.forEach(function(cat){
+      var done = cat.items.filter(function(it){ return !!state[it.id]; }).length;
+      totalDone += done; totalAll += cat.items.length;
+      var badge = root.querySelector('[data-count-for="'+cat.id+'"]');
+      if(badge) badge.textContent = done+" / "+cat.items.length;
+    });
+    document.getElementById("progress-done").textContent = totalDone;
+    document.getElementById("progress-total").textContent = totalAll;
+    var pct = totalAll ? Math.round((totalDone/totalAll)*100) : 0;
+    document.getElementById("progress-pct").textContent = pct+"%";
+    document.getElementById("progress-fill").style.width = pct+"%";
+  }
+
+  function applyFilters(){
+    var term = filters.search.trim().toLowerCase();
+    var visibleTotal = 0;
+    root.querySelectorAll(".category").forEach(function(catEl){
+      var catId = catEl.dataset.id;
+      var catAllowed = filters.categories.has(catId);
+      var anyVisible = false;
+      catEl.querySelectorAll(".item").forEach(function(itemEl){
+        var id = itemEl.dataset.id;
+        var done = !!state[id];
+        var statusOk = filters.status==="all" || (filters.status==="done"&&done) || (filters.status==="remaining"&&!done);
+        var searchOk = !term || (itemEl.dataset.search||"").indexOf(term) !== -1;
+        var priorityOk = !filters.priorityOnly || itemEl.dataset.priority === "1";
+        var visible = catAllowed && statusOk && searchOk && priorityOk;
+        itemEl.classList.toggle("is-hidden", !visible);
+        if(visible){ anyVisible = true; visibleTotal++; }
+      });
+      catEl.classList.toggle("is-hidden", !anyVisible);
+    });
+    emptyState.classList.toggle("is-visible", visibleTotal===0);
+  }
+
+  function showToast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add("is-visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("is-visible"); }, ms || 2200);
+  }
+
+  /* Redraw every checkbox and counter from state. Used by Import and by the
+     handoff below, which both change state behind the rendered list. */
+  function refreshFromState(){
+    root.querySelectorAll(".item__check-input").forEach(function(cb){
+      var done = !!state[cb.dataset.id];
+      cb.checked = done;
+      cb.closest(".item").classList.toggle("is-done", done);
+    });
+    updateCounts();
+    applyFilters();
+  }
+
+  /* ==============================================================
+     PROGRESS HANDOFF
+     The old page at d4.schillman.se sends people here with their
+     progress in the fragment, as #import=<base64url of the same
+     {itemId:boolean} map this page stores>. That sender is already
+     shipped, so this end only reads the format and never defines
+     it.
+
+     The fragment is attacker supplied as far as this page is
+     concerned: it is whatever was in the link someone clicked. So
+     it is fully decoded and validated into a local object before a
+     single key is written, and localStorage is only touched once
+     that has succeeded. Someone arriving on a truncated link has a
+     season of ticks in this browser, and the failure mode has to be
+     "nothing happened, here is what to do instead", never a
+     half applied or cleared map.
+     ============================================================== */
+  function decodeHandoff(payload){
+    var b64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    while(b64.length % 4) b64 += "=";
+    var data = JSON.parse(atob(b64));
+    if(!data || typeof data !== "object" || Array.isArray(data)) throw new Error("not an object");
+    Object.keys(data).forEach(function(k){
+      if(typeof data[k] !== "boolean") throw new Error("value for " + k + " is not a boolean");
+    });
+    return data;
+  }
+
+  function importFromFragment(){
+    var match = /^#import=([\s\S]*)$/.exec(location.hash || "");
+    if(!match) return;
+
+    /* Cleared first and unconditionally, so a reload cannot re-import and the
+       URL is not left carrying the payload even when the decode below throws.
+       replaceState so no history entry is added and Back still leaves the page.
+       It can throw on file:// in some browsers, and that is not worth failing
+       an import over. */
+    try{
+      history.replaceState(null, "", location.pathname + location.search);
+    }catch(e){ /* URL stays as it is, the import below still runs once */ }
+
+    var incoming;
+    try{
+      incoming = decodeHandoff(match[1]);
+    }catch(e){
+      showToast("That transfer link could not be read. Nothing was changed. Use Export and Import instead.", 8000);
+      return;
+    }
+
+    /* Only ids that exist on this list are written. An unknown key cannot mean
+       anything here and there is no reason to keep it in storage. */
+    var carried = 0;
+    Object.keys(incoming).forEach(function(id){
+      if(!itemIndex[id]) return;
+      state[id] = incoming[id];
+      carried++;
+    });
+    if(!carried){
+      showToast("That transfer link had nothing on this list. Nothing was changed.", 8000);
+      return;
+    }
+    saveState();
+    refreshFromState();
+    showToast(carried === 1
+      ? "1 item carried across from d4.schillman.se"
+      : carried + " items carried across from d4.schillman.se", 5000);
+  }
+
+  function openModal(id){
+    var entry = itemIndex[id];
+    if(!entry) return;
+    clearTimeout(modalCloseTimer);
+    modalEyebrow.textContent = entry.category;
+    modalTitle.textContent = entry.item.title;
+    var paras = (DESCRIPTIONS[id] && DESCRIPTIONS[id].length) ? DESCRIPTIONS[id] : [entry.item.detail];
+    modalBody.innerHTML = paras.map(function(p){ return "<p>"+p+"</p>"; }).join("");
+    modalBody.scrollTop = 0;
+    modalCard.classList.remove("modal--legendary","modal--mythic");
+    if(entry.rarity) modalCard.classList.add("modal--"+entry.rarity);
+    lastFocused = document.activeElement;
+    modalOverlay.hidden = false;
+    appEl.inert = true;
+    document.body.classList.add("modal-open");
+    requestAnimationFrame(function(){ modalOverlay.classList.add("is-open"); });
+    modalClose.focus();
+  }
+
+  function closeModal(){
+    if(modalOverlay.hidden) return;
+    modalOverlay.classList.remove("is-open");
+    appEl.inert = false;
+    document.body.classList.remove("modal-open");
+    modalCloseTimer = setTimeout(function(){ modalOverlay.hidden = true; }, 200);
+    var restore = lastFocused;
+    lastFocused = null;
+    if(restore && restore.focus) restore.focus();
+  }
+
+  function trapModalFocus(e){
+    var nodes = modalOverlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    var focusables = Array.prototype.filter.call(nodes, function(el){ return !el.disabled && el.offsetParent !== null; });
+    if(!focusables.length) return;
+    var first = focusables[0], last = focusables[focusables.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+
+  function bindEvents(){
+    root.addEventListener("change", function(e){
+      var input = e.target.closest(".item__check-input");
+      if(!input) return;
+      var id = input.dataset.id;
+      state[id] = input.checked;
+      saveState();
+      input.closest(".item").classList.toggle("is-done", input.checked);
+      updateCounts();
+      if(filters.status !== "all") applyFilters();
+    });
+
+    root.addEventListener("click", function(e){
+      var btn = e.target.closest(".item__info-btn");
+      if(!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openModal(btn.dataset.desc);
+    });
+
+    modalClose.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", function(e){
+      if(e.target === modalOverlay) closeModal();
+    });
+    document.addEventListener("keydown", function(e){
+      if(modalOverlay.hidden) return;
+      if(e.key === "Escape"){ e.preventDefault(); closeModal(); }
+      else if(e.key === "Tab"){ trapModalFocus(e); }
+    });
+
+    document.getElementById("search-input").addEventListener("input", function(e){
+      filters.search = e.target.value;
+      applyFilters();
+    });
+
+    document.querySelectorAll(".status-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        document.querySelectorAll(".status-btn").forEach(function(b){
+          b.classList.remove("is-active"); b.setAttribute("aria-pressed","false");
+        });
+        btn.classList.add("is-active"); btn.setAttribute("aria-pressed","true");
+        filters.status = btn.dataset.status;
+        applyFilters();
+      });
+    });
+
+    var priToggle = document.getElementById("priority-toggle");
+    priToggle.addEventListener("click", function(){
+      filters.priorityOnly = !filters.priorityOnly;
+      priToggle.classList.toggle("is-active", filters.priorityOnly);
+      priToggle.setAttribute("aria-pressed", filters.priorityOnly ? "true" : "false");
+      applyFilters();
+    });
+
+    chipsRoot.addEventListener("click", function(e){
+      var chip = e.target.closest(".chip");
+      if(!chip) return;
+      var id = chip.dataset.cat;
+      if(filters.categories.has(id)){
+        filters.categories.delete(id);
+        chip.classList.remove("is-active"); chip.classList.add("is-off");
+        chip.setAttribute("aria-pressed","false");
+      }else{
+        filters.categories.add(id);
+        chip.classList.add("is-active"); chip.classList.remove("is-off");
+        chip.setAttribute("aria-pressed","true");
+      }
+      applyFilters();
+    });
+
+    document.getElementById("clear-filters-btn").addEventListener("click", function(){
+      filters.status = "all"; filters.search = "";
+      filters.categories = new Set(DATA.map(function(c){return c.id;}));
+      filters.priorityOnly = false;
+      priToggle.classList.remove("is-active");
+      priToggle.setAttribute("aria-pressed","false");
+      document.getElementById("search-input").value = "";
+      document.querySelectorAll(".status-btn").forEach(function(b){
+        var isAll = b.dataset.status==="all";
+        b.classList.toggle("is-active", isAll); b.setAttribute("aria-pressed", isAll?"true":"false");
+      });
+      chipsRoot.querySelectorAll(".chip").forEach(function(c){
+        c.classList.add("is-active"); c.classList.remove("is-off"); c.setAttribute("aria-pressed","true");
+      });
+      applyFilters();
+    });
+
+    var resetBtn = document.getElementById("reset-btn");
+    var resetArmed = false, resetTimer = null;
+    resetBtn.addEventListener("click", function(){
+      if(!resetArmed){
+        resetArmed = true;
+        resetBtn.textContent = "Click again to confirm";
+        resetBtn.classList.add("is-armed");
+        resetTimer = setTimeout(function(){
+          resetArmed = false;
+          resetBtn.textContent = "Reset progress";
+          resetBtn.classList.remove("is-armed");
+        }, 4000);
+      }else{
+        clearTimeout(resetTimer);
+        resetArmed = false;
+        resetBtn.textContent = "Reset progress";
+        resetBtn.classList.remove("is-armed");
+        state = {};
+        saveState();
+        root.querySelectorAll(".item__check-input").forEach(function(cb){
+          cb.checked = false;
+          cb.closest(".item").classList.remove("is-done");
+        });
+        updateCounts();
+        applyFilters();
+        showToast("Progress reset");
+      }
+    });
+
+    document.getElementById("export-btn").addEventListener("click", function(){
+      var payload = JSON.stringify(state);
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(payload).then(function(){
+          showToast("Backup copied to clipboard");
+        }, function(){
+          window.prompt("Copy this backup text:", payload);
+        });
+      }else{
+        window.prompt("Copy this backup text:", payload);
+      }
+    });
+
+    document.getElementById("import-btn").addEventListener("click", function(){
+      var raw = window.prompt("Paste your backup text:");
+      if(!raw) return;
+      try{
+        var incoming = JSON.parse(raw);
+        Object.keys(incoming).forEach(function(k){ state[k] = !!incoming[k]; });
+        saveState();
+        refreshFromState();
+        showToast("Progress restored");
+      }catch(err){
+        showToast("That backup text couldn't be read");
+      }
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

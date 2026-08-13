@@ -2,7 +2,9 @@
 
 The hub site at [schillman.se](https://schillman.se). Static files, no build step. Deployed on Netlify.
 
-The Diablo IV Season 14 Farming Ledger at `d4.schillman.se` is a separate repo, [Schillman/farming-ledger](https://github.com/Schillman/farming-ledger).
+The Diablo IV Season 14 Farming Ledger is a page of this site at `/d4/ledger.html`.
+It is still developed in its own repo, [Schillman/farming-ledger](https://github.com/Schillman/farming-ledger),
+because it is also a standalone single file tool; this copy is the deployed one.
 
 ## Shape of the site
 
@@ -14,7 +16,7 @@ directory, and site wide pages stay at the root.
 /d4/                           Diablo IV section overview
 /d4/guides.html                Diablo IV guide index
 /d4/<slug>.html                the guides
-/d4/ledger.html                reserved, not built yet, see below
+/d4/ledger.html                the Season 14 Farming Ledger, see below
 /about.html /contact.html /privacy.html    site wide
 ```
 
@@ -24,11 +26,26 @@ rule in it. There is deliberately no numbered register of games under the
 monument: a one row list with an `01` in the margin is the launcher grid wearing
 a different shape, and it made the page count itself.
 
-`/d4/ledger.html` is a reserved slot. The Farming Ledger still lives at
-`d4.schillman.se` and every "Ledger" nav item points there. When the ledger moves
-onto this domain, that one href changes per page and its redirect goes in
-`_redirects`. The nav item is deliberately a live external link rather than a
-disabled placeholder, so it is never a dead end for a real visitor.
+`/d4/ledger.html` is the one page on the site that does not use `site.css`, and
+that is deliberate rather than an oversight. It is a single file tool people save
+to disk and use with the network off while playing, so it carries its own inline
+`<style>` and its own inline scripts, including an inline SVG sprite for its
+icons. Its site chrome (breadcrumb, section nav, footer) is therefore a copy of
+the matching rules from `site.css` rather than a link to it, and every link in
+that chrome is absolute so it still goes somewhere from a `file://` copy.
+
+Keeping a copy honest is `check.py`'s job: class tokens resolve against
+`site.css` **plus any inline `<style>` in the page being checked**, so the
+ledger's own hundred classes are checked against its own stylesheet and a class
+with no rule anywhere still fails. The page is not exempted from anything.
+
+It also implements the receiving half of a progress handoff. The old page at
+`d4.schillman.se` links here with `#import=<base64url of the {itemId: boolean}
+map>`. That fragment is fully decoded and validated into a local object before a
+single key is written, and it is cleared with `replaceState` first, so a
+malformed link cannot half apply, cannot clear a season of progress, and cannot
+re-import on reload. The merge is last write wins per item key, because the old
+page offers "Send my progress again".
 
 ## Files
 
@@ -37,6 +54,7 @@ disabled placeholder, so it is never a dead end for a real visitor.
 | `index.html` | The hub. The site's thesis, the Diablo IV monument, the register of what has a section and what earns one, and the editorial rules. |
 | `d4/index.html` | Diablo IV section overview. The season in short, the three guides, the ledger, and how the ledger is built. |
 | `d4/guides.html` | The guide index for Diablo IV. A new guide gets added here and on `d4/index.html`. |
+| `d4/ledger.html` | The Season 14 Farming Ledger. The one page with its own inline styles and scripts, because it has to work as a single file saved to disk. See below before editing it. |
 | `site.css` | Shared stylesheet, the single source of truth for the design tokens, and the whole motion system. The ledger keeps its own inline copy on purpose, because it has to work as one file saved to disk. |
 | `site.js` | Twenty lines of IntersectionObserver that add `.is-in` to `.reveal` sections. Everything else about the motion is CSS. |
 | `d4/season-14-death-awakening.html` | Guide: Pandemonium Ruptures, Realmwalkers, Deathtoll Chambers, the Corrupted Reaper, Glints of Hope, Pandemonium Fragments. |
@@ -131,7 +149,7 @@ extension of `main` holding one commit per unpublished page.
 
 ## Checking a change
 
-There is no build step and no test framework. Run `python3 check.py .` before pushing. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css`, every internal link resolves to a file that exists whether it is written absolute or relative, there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), `site.js` parses under `node --check`, and no custom property is declared without being referenced. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
+There is no build step and no test framework. Run `python3 check.py .` before pushing. It walks every directory, not just the root, and verifies that every `class` token resolves to a selector in `site.css` or in the checked page's own inline `<style>`, every internal link resolves to a file that exists whether it is written absolute or relative, there are no em dashes, curly quotes or unescaped `&`, tags are balanced, every colour token pair in use clears its WCAG threshold (ratios printed, not eyeballed), `site.js` parses under `node --check`, and no custom property is declared without being referenced. The class check and the `&` check run on the markup with `<script>` bodies blanked out, because a `class="..."` built by string concatenation and an `&&` in a filter are JavaScript, not authoring mistakes, and the noise from scanning them is exactly what gets a file exempted. Pages are reported by path, not basename, because `d4/guides.html` and a future `d4x/guides.html` are different files.
 
 It was validated by mutation: each check was confirmed to fail on a deliberately broken copy of the site, not just to pass on the current one. The subdirectory walk and the relative link resolution were validated the same way, by confirming the previous version of `check.py` stays green on a mutation the current one catches. If you add a check, do the same, otherwise you cannot tell it from a check that never fires.
 

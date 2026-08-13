@@ -2,12 +2,14 @@
 """Structural + a11y checks for schillman.se. Exits non-zero on any failure.
 
 Checks:
-  1. every class= token used in HTML has a matching selector in site.css
+  1. every class= token used in HTML markup has a matching selector, in
+     site.css or in that page's own inline <style>
   2. every internal href or src, absolute or relative, resolves to a real file
   3. no em dash, no curly quotes
-  4. no unescaped & (must be part of an entity)
+  4. no unescaped & in markup (must be part of an entity)
   5. HTML parses and tags are balanced
   6. WCAG contrast for the declared foreground/background pairs
+ 6b. a token a page copies inline still has site.css's value
   7. site.js parses (node --check)
   8. no custom property declared without being referenced
 
@@ -36,9 +38,39 @@ def rel(path):
     return os.path.relpath(path, ROOT).replace(os.sep, "/")
 
 
+# ---------- markup vs script ----------
+# The class check and the & check are both about HTML markup. A class="..." or
+# an && inside a <script> is JavaScript source, not an authoring mistake: the
+# ledger builds its rows by string concatenation ('<li class="item'+cls+'"') and
+# writes && in every filter. Scanning those produces tokens like item'+cls+' and
+# a failure per boolean operator, which is exactly the noise that gets a file
+# exempted, and an exempted file is unchecked. So those two checks run on the
+# markup with script bodies blanked out. This is the same reasoning that already
+# exempts site.js from the & scan, applied to the inline scripts doing that job.
+# Newlines are preserved so reported line numbers still point at the real line.
+# Everything else (links, em dashes, curly quotes, tag balance) still runs on
+# the whole file, because those are wrong in a script too.
+SCRIPT_BLOCK = re.compile(r"<script\b[^>]*>.*?</script>", re.S | re.I)
+STYLE_BLOCK = re.compile(r"<style\b[^>]*>(.*?)</style>", re.S | re.I)
+
+
+def markup_only(src):
+    return SCRIPT_BLOCK.sub(lambda m: "\n" * m.group(0).count("\n"), src)
+
+
+def selectors_in(text):
+    return set(re.findall(r"\.([A-Za-z][\w-]*)", text))
+
+
 # ---------- 1. class coverage ----------
+# Resolved against site.css PLUS any inline <style> in the page being checked.
+# The ledger has to keep working as a single file saved to disk with the network
+# off, so it carries its own styles instead of linking site.css. Checking it
+# against site.css alone would fail on ~100 real classes and checking nothing at
+# all would be worse, so the page's own stylesheet counts for that page only. A
+# class with no rule anywhere still fails, which is the whole point.
 css = open(os.path.join(ROOT, "site.css"), encoding="utf-8").read()
-css_classes = set(re.findall(r"\.([A-Za-z][\w-]*)", css))
+css_classes = selectors_in(css)
 
 html_files = []
 for dirpath, dirnames, filenames in os.walk(ROOT):
@@ -53,10 +85,14 @@ if not html_files:
 
 for f in html_files:
     src = open(f, encoding="utf-8").read()
-    for attr in re.findall(r'class="([^"]*)"', src):
+    known = css_classes.union(*(selectors_in(block)
+                                for block in STYLE_BLOCK.findall(src))) \
+        if STYLE_BLOCK.search(src) else css_classes
+    for attr in re.findall(r'class="([^"]*)"', markup_only(src)):
         for tok in attr.split():
-            if tok not in css_classes:
-                fail(f"{rel(f)}: class '{tok}' has no selector in site.css")
+            if tok not in known:
+                fail(f"{rel(f)}: class '{tok}' has no selector in site.css "
+                     f"or in this page's inline <style>")
 
 # ---------- 2. internal links ----------
 # Both forms have to resolve. An absolute href is rooted at the publish
@@ -109,6 +145,7 @@ for f in html_files + [os.path.join(ROOT, "site.css"),
             fail(f"{name}:{line}: {label} found")
     if os.path.normpath(f) in ENTITY_EXEMPT:
         continue
+    src = markup_only(src) if f.endswith(".html") else src
     spans = {m.start() for m in ENTITY.finditer(src)}
     for m in re.finditer(r"&", src):
         if m.start() not in spans:
@@ -214,6 +251,21 @@ for fg, bg, minimum, what in PAIRS:
           f"--{fg} on --{bg}  [{what}]")
     if not ok:
         fail(f"contrast {r:.2f}:1 below {minimum}:1 for --{fg} on --{bg} ({what})")
+
+# ---------- 6b. copied tokens have not drifted ----------
+# The ledger carries its own copy of the design tokens, because it has to work as
+# one file saved to disk with the network off and cannot link site.css. That copy
+# is the only reason the ratios above describe it at all: a value that quietly
+# drifted would leave check 6 reporting contrast for a colour the page does not
+# use, which is worse than not checking it. Names a page does not share are its
+# own business. Names it does share have to mean the same thing.
+for f in html_files:
+    src = open(f, encoding="utf-8").read()
+    for block in STYLE_BLOCK.findall(src):
+        for tok, val in re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6});", block):
+            if tok in TOKENS and val.lower() != TOKENS[tok].lower():
+                fail(f"{rel(f)}: inline --{tok} is {val} but site.css says "
+                     f"{TOKENS[tok]}, and contrast is computed from site.css")
 
 # ---------- 7. site.js parses ----------
 # The onerror attribute on each <script src="/site.js"> only fires when the file
