@@ -115,7 +115,7 @@ reading and Barlow Condensed, tracked out and uppercased, for labels, stats and
 buttons.
 
 Two levels of chrome. The hub at `/` is a game selector and owns `.hero`,
-`.monument` and `.roster`. Every game section (`/d4/` today) reuses the shared
+`.monument`. Every game section (`/d4/` today) reuses the shared
 page furniture and identifies itself with a `.topbar__crumb`: the wordmark, a
 hairline, the game name. Nothing in the stylesheet is Diablo specific, so a
 second game needs a directory and a monument, not a new system.
@@ -171,8 +171,8 @@ for the hero lede. A page that ignores the cap looks wrong immediately.
 - One spacing rhythm: `44px` between sections, `18px` to `28px` inside them,
   more space above a heading than below it.
 - Breakpoints are two. `860px` turns the monument into its two column grid and
-  the hub's editorial rules into two columns. `640px` collapses the roster row
-  and tightens the monument padding.
+  the hub's editorial rules into two columns. `640px` tightens the monument
+  padding.
 - Tables always sit inside `.table-scroll` so a wide table scrolls itself
   instead of scrolling the page.
 
@@ -204,8 +204,6 @@ is the site's signature line.
   argument and stats on the right, divided by a hairline. DOM order is the
   mobile order (name, argument, action) and the desktop grid moves the action
   back without touching it.
-- **`.roster`** The register under the monument. One row per game, numbered.
-  Grows by adding a row.
 - **`.topbar__crumb`** Wordmark, gold divider, game name, then a hairline that
   draws itself to the container edge. The only thing that says you are inside a
   section rather than on a different site.
@@ -229,7 +227,10 @@ Four layers, all in `site.css`, all switched off wholesale under
    right, title, lede, then the monument rising with its sigil breathing. Gated
    on the `.js` class, so with scripting off the page is simply visible.
 3. **Scroll reveals.** `.reveal` sections fade and rise in as they enter the
-   viewport, staggered by `--i`. One IntersectionObserver in `site.js`.
+   viewport, staggered by `--i`. One IntersectionObserver in `site.js`, with two
+   guards so a hidden start state can never cost a reader content: `onerror` on
+   the script tag drops the `.js` class if the file fails, and `@media print`
+   pins every reveal visible.
 4. **Choreography.** Hover and focus share every gesture: the nav wash, the card
    hairline, the guide bar, the CTA ring, the prose underline growing from the
    leading edge. All left to right, quiet to lit, one grammar.

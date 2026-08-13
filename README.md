@@ -18,9 +18,11 @@ directory, and site wide pages stay at the root.
 /about.html /contact.html /privacy.html    site wide
 ```
 
-Adding a second game is a directory, one more `.monument` block on the hub, one
-more `.roster__row` under it, and its pages in the sitemap. It needs no new CSS:
-`site.css` has no Diablo specific rule in it.
+Adding a second game is a directory, one more `.monument` block on the hub, and
+its pages in the sitemap. It needs no new CSS: `site.css` has no Diablo specific
+rule in it. There is deliberately no numbered register of games under the
+monument: a one row list with an `01` in the margin is the launcher grid wearing
+a different shape, and it made the page count itself.
 
 `/d4/ledger.html` is a reserved slot. The Farming Ledger still lives at
 `d4.schillman.se` and every "Ledger" nav item points there. When the ledger moves
@@ -66,8 +68,16 @@ form and no canonical uses it.
 The motion system is all in `site.css`, in four layers: drifting embers, a staged
 load sequence per page, scroll reveals, and hover and focus choreography. Cross
 document transitions are the two line `@view-transition` declaration, no
-JavaScript. Nothing is hidden without JavaScript: the `.reveal` start state is
-gated on the `.js` class that an inline one liner sets in each `<head>`.
+JavaScript.
+
+`.reveal` starts hidden and only `site.js` unhides it, so two guards keep that
+from ever costing a reader content. `onerror` on each `<script src="/site.js">`
+strips the `.js` class if the file fails to load, and an `@media print` block
+pins every reveal visible, because print has no scrolling and no observer.
+Both were mutation tested: without the `onerror` guard a missing `site.js`
+leaves every section permanently invisible, and without the print block a
+printed guide loses 89 percent of its text (5602 text drawing operators in the
+PDF with it, 618 without).
 
 `prefers-reduced-motion: reduce` switches all of it off wholesale, at the bottom
 of `site.css`. That is a floor, not a dial: the ember field is removed from the

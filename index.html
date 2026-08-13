@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <script>document.documentElement.className="js";</script>
-<script src="/site.js" defer></script>
+<script src="/site.js" defer onerror="document.documentElement.className=''"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6075501159466539"
      crossorigin="anonymous"></script>
 </head>
@@ -66,18 +66,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the
     </div>
     <div class="hero__rule"></div>
     <h1 class="hero__title">Farming tools for the games I <em>actually play</em></h1>
-    <p class="hero__lede">One person, a seasonal habit, and a preference for small static pages over spreadsheets. Every mechanic named here has been checked against a current source, every page carries the date it was checked, and anything that could not be confirmed is labelled as unconfirmed rather than smoothed over.</p>
+    <p class="hero__lede">Every mechanic named here has been checked against a current source, every page carries the date it was checked, and anything I could not confirm is labelled as unconfirmed rather than smoothed over.</p>
 
     <!-- The hub extension point. A second game is one more <a class="monument">
-         here, one more .roster__row below, and a directory alongside /d4/. -->
-    <a class="monument" href="/d4/">
+         here and a directory alongside /d4/. Nothing else changes. -->
+    <a class="monument" href="/d4/" aria-label="Diablo IV, Season 14 Death Awakening">
       <span class="monument__plate">
         <svg class="monument__sigil" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <path d="M32 4c-11 17-16 26-10 37 -4-9 5-12 10-7 5-5 14-1 10 7 6-11 1-20-10-37Z" fill="#ff5a36"></path>
           <path d="M32 30c-4 6-6 9-4 13 -1-3 2-4 4-2 2-2 5 -1 4 2 2-4 0-7-4-13Z" fill="#c9a15a"></path>
         </svg>
-        <span class="monument__eyebrow">Entry 01 of 1</span>
-        <span class="monument__title">Diablo IV</span>
+        <h2 class="monument__title">Diablo IV</h2>
         <span class="monument__season">Season 14, Death Awakening</span>
       </span>
       <span class="monument__brief">
@@ -94,23 +93,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the
   </header>
 
   <section class="reveal">
-    <p class="section-label">The register</p>
-    <h2>What has a section here, and what earns one</h2>
-    <ol class="roster">
-      <li class="roster__row">
-        <span class="roster__no">01</span>
-        <span class="roster__name">Diablo IV</span>
-        <span class="roster__state">Live. Three written guides, the Season 14 Farming Ledger, and a section that gets updated while the season is running.</span>
-      </li>
-    </ol>
-    <div class="prose longform">
-      <p>One entry is the honest number. A game gets a section here when I have played enough of it, for long enough, to write about it without repeating what someone else already wrote, and when I am still playing it often enough to notice a patch moving a number. That is a slower rule than adding another logo to a grid, and it is deliberate: a page that has not been checked since launch week is worse than no page at all, because you cannot tell which kind you are reading.</p>
-      <p>So the register grows when a second game clears that bar and not before. If you want to know what is likely, the answer is whatever I am still playing in six months.</p>
-    </div>
-  </section>
-
-  <section class="reveal">
-    <p class="section-label">Editorial</p>
     <h2>How every page here is written</h2>
     <ul class="facts">
       <li>
@@ -136,10 +118,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the
   </section>
 
   <section class="reveal">
-    <p class="section-label">Who</p>
     <h2>One person, no team, no sponsor</h2>
     <div class="prose longform">
       <p>I am Sebastian Schillman, a platform engineer in Sweden. My working life is Azure and Terraform and making infrastructure boring enough to sleep through. This is the opposite of that, and it exists because every season I rebuilt the same private notes file until it was less work to write the thing properly.</p>
+      <p>One game is the honest number. Another one gets a section here when I have played it long enough to write about it without repeating what someone else already wrote, and am still playing it often enough to notice a patch moving a number. A page nobody has checked since launch week is worse than no page, because you cannot tell which kind you are reading.</p>
       <p>Nothing here is affiliated with or endorsed by any publisher. There are no affiliate links, no sponsored placements and no paid rankings. Corrections are the most useful thing you can send, and the <a href="/contact.html">contact page</a> lists the fastest ways to reach me. The source for every page is public on <a href="https://github.com/Schillman">GitHub</a>.</p>
     </div>
   </section>
