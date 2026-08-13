@@ -14,6 +14,7 @@ The Diablo IV Season 14 Farming Ledger at `d4.schillman.se` is a separate repo, 
 | `season-14-death-awakening.html` | Guide: Pandemonium Ruptures, Realmwalkers, Deathtoll Chambers, the Corrupted Reaper, Glints of Hope, Pandemonium Fragments. |
 | `war-plans.html` | Guide: the War Plans board, the seven activity trees, and which nodes to take first. |
 | `escalations.html` | Guide: the Escalation chain and a full table of the Horadric Reserve affixes. |
+| `helltides.html` | Guide: Aberrant Cinders and their expiry, Tortured Gift prices, the Threat meter, and the Helltide War Plan nodes. |
 | `about.html` | Who writes the site, why, and the editorial rules every page is held to. Carries the sourcing policy in public. |
 | `contact.html` | How to reach me, what makes a correction actionable, and rights holder contact. |
 | `privacy.html` | Privacy and cookie policy covering this domain and its subdomains. Required by the AdSense terms. |
